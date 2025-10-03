@@ -22,10 +22,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -56,7 +58,8 @@ import com.example.reply.data.MailboxType
 fun ReplyDetailsScreen(
     replyUiState: ReplyUiState,
     onBackPressed: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isFullScreen: Boolean = false,
 ) {
     BackHandler {
         onBackPressed()
@@ -69,22 +72,25 @@ fun ReplyDetailsScreen(
                 .background(color = MaterialTheme.colorScheme.inverseOnSurface)
         ) {
             item {
-                ReplyDetailsScreenTopBar(
-                    onBackPressed,
-                    replyUiState,
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            bottom = dimensionResource(R.dimen.detail_topbar_padding_bottom),
-                            top = dimensionResource(R.dimen.topbar_padding_vertical)
-                        )
-                )
+                if (isFullScreen) {
+                    ReplyDetailsScreenTopBar(
+                        onBackPressed, replyUiState, Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                bottom = dimensionResource(R.dimen.detail_topbar_padding_bottom),
+                                top = dimensionResource(R.dimen.topbar_padding_vertical)
+                            )
+                    )
+                }
                 ReplyEmailDetailsCard(
                     email = replyUiState.currentSelectedEmail,
                     mailboxType = replyUiState.currentMailbox,
-                    modifier = Modifier
-                        .navigationBarsPadding()
-                        .padding(horizontal = dimensionResource(R.dimen.detail_card_outer_padding_horizontal))
+                    modifier = if (isFullScreen) {
+                        Modifier.padding(horizontal = dimensionResource(R.dimen.detail_card_outer_padding_horizontal))
+                    } else {
+                        Modifier.padding(end = dimensionResource(R.dimen.detail_card_outer_padding_horizontal))
+                    },
+                    isFullScreen = isFullScreen,
                 )
             }
         }
@@ -95,7 +101,7 @@ fun ReplyDetailsScreen(
 private fun ReplyDetailsScreenTopBar(
     onBackButtonClicked: () -> Unit,
     replyUiState: ReplyUiState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier,
@@ -132,6 +138,7 @@ private fun ReplyEmailDetailsCard(
     email: Email,
     mailboxType: MailboxType,
     modifier: Modifier = Modifier,
+    isFullScreen: Boolean = false,
 ) {
     val context = LocalContext.current
     val displayToast = { text: String ->
@@ -147,18 +154,21 @@ private fun ReplyEmailDetailsCard(
                 .padding(dimensionResource(R.dimen.detail_card_inner_padding))
         ) {
             DetailsScreenHeader(
-                email,
-                Modifier.fillMaxWidth()
+                email, Modifier.fillMaxWidth()
             )
-            Text(
-                text = stringResource(email.subject),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.padding(
-                    top = dimensionResource(R.dimen.detail_content_padding_top),
-                    bottom = dimensionResource(R.dimen.detail_expanded_subject_body_spacing)
-                ),
-            )
+            if (isFullScreen) {
+                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.detail_content_padding_top)))
+            } else {
+                Text(
+                    text = stringResource(email.subject),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.outline,
+                    modifier = Modifier.padding(
+                        top = dimensionResource(R.dimen.detail_content_padding_top),
+                        bottom = dimensionResource(R.dimen.detail_expanded_subject_body_spacing)
+                    ),
+                )
+            }
             Text(
                 text = stringResource(email.body),
                 style = MaterialTheme.typography.bodyLarge,
@@ -173,62 +183,59 @@ private fun ReplyEmailDetailsCard(
 private fun DetailsScreenButtonBar(
     mailboxType: MailboxType,
     displayToast: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier) {
         when (mailboxType) {
-            MailboxType.Drafts ->
+            MailboxType.Drafts -> ActionButton(
+                text = stringResource(id = R.string.continue_composing),
+                onButtonClicked = displayToast
+            )
+
+            MailboxType.Spam -> Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        vertical = dimensionResource(R.dimen.detail_button_bar_padding_vertical)
+                    ),
+                horizontalArrangement = Arrangement.spacedBy(
+                    dimensionResource(R.dimen.detail_button_bar_item_spacing)
+                ),
+            ) {
                 ActionButton(
-                    text = stringResource(id = R.string.continue_composing),
-                    onButtonClicked = displayToast
+                    text = stringResource(id = R.string.move_to_inbox),
+                    onButtonClicked = displayToast,
+                    modifier = Modifier.weight(1f)
                 )
+                ActionButton(
+                    text = stringResource(id = R.string.delete),
+                    onButtonClicked = displayToast,
+                    containIrreversibleAction = true,
+                    modifier = Modifier.weight(1f)
+                )
+            }
 
-            MailboxType.Spam ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            vertical = dimensionResource(R.dimen.detail_button_bar_padding_vertical)
-                        ),
-                    horizontalArrangement = Arrangement.spacedBy(
-                        dimensionResource(R.dimen.detail_button_bar_item_spacing)
+            MailboxType.Sent, MailboxType.Inbox -> Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        vertical = dimensionResource(R.dimen.detail_button_bar_padding_vertical)
                     ),
-                ) {
-                    ActionButton(
-                        text = stringResource(id = R.string.move_to_inbox),
-                        onButtonClicked = displayToast,
-                        modifier = Modifier.weight(1f)
-                    )
-                    ActionButton(
-                        text = stringResource(id = R.string.delete),
-                        onButtonClicked = displayToast,
-                        containIrreversibleAction = true,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-            MailboxType.Sent, MailboxType.Inbox ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            vertical = dimensionResource(R.dimen.detail_button_bar_padding_vertical)
-                        ),
-                    horizontalArrangement = Arrangement.spacedBy(
-                        dimensionResource(R.dimen.detail_button_bar_item_spacing)
-                    ),
-                ) {
-                    ActionButton(
-                        text = stringResource(id = R.string.reply),
-                        onButtonClicked = displayToast,
-                        modifier = Modifier.weight(1f)
-                    )
-                    ActionButton(
-                        text = stringResource(id = R.string.reply_all),
-                        onButtonClicked = displayToast,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                horizontalArrangement = Arrangement.spacedBy(
+                    dimensionResource(R.dimen.detail_button_bar_item_spacing)
+                ),
+            ) {
+                ActionButton(
+                    text = stringResource(id = R.string.reply),
+                    onButtonClicked = displayToast,
+                    modifier = Modifier.weight(1f)
+                )
+                ActionButton(
+                    text = stringResource(id = R.string.reply_all),
+                    onButtonClicked = displayToast,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
     }
 }
@@ -238,8 +245,7 @@ private fun DetailsScreenHeader(email: Email, modifier: Modifier = Modifier) {
     Row(modifier = modifier) {
         ReplyProfileImage(
             drawableResource = email.sender.avatar,
-            description = stringResource(email.sender.firstName) + " "
-                    + stringResource(email.sender.lastName),
+            description = stringResource(email.sender.firstName) + " " + stringResource(email.sender.lastName),
             modifier = Modifier.size(
                 dimensionResource(R.dimen.email_header_profile_size)
             )
@@ -250,8 +256,7 @@ private fun DetailsScreenHeader(email: Email, modifier: Modifier = Modifier) {
                 .padding(
                     horizontal = dimensionResource(R.dimen.email_header_content_padding_horizontal),
                     vertical = dimensionResource(R.dimen.email_header_content_padding_vertical)
-                ),
-            verticalArrangement = Arrangement.Center
+                ), verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = stringResource(email.sender.firstName),
@@ -280,8 +285,7 @@ private fun ActionButton(
                 .fillMaxWidth()
                 .padding(vertical = dimensionResource(R.dimen.detail_action_button_padding_vertical)),
             colors = ButtonDefaults.buttonColors(
-                containerColor =
-                if (containIrreversibleAction) {
+                containerColor = if (containIrreversibleAction) {
                     MaterialTheme.colorScheme.onErrorContainer
                 } else {
                     MaterialTheme.colorScheme.primaryContainer
@@ -289,9 +293,7 @@ private fun ActionButton(
             )
         ) {
             Text(
-                text = text,
-                color =
-                if (containIrreversibleAction) {
+                text = text, color = if (containIrreversibleAction) {
                     MaterialTheme.colorScheme.onError
                 } else {
                     MaterialTheme.colorScheme.onSurfaceVariant
