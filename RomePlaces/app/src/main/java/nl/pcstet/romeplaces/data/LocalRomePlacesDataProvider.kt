@@ -1,12 +1,14 @@
-package nl.pcstet.romeplaces
+package nl.pcstet.romeplaces.data
 
+import nl.pcstet.romeplaces.R
 import nl.pcstet.romeplaces.model.RomePlace
-import nl.pcstet.romeplaces.model.RomePlaceCitySection
 import nl.pcstet.romeplaces.model.RomePlaceCategory
+import nl.pcstet.romeplaces.model.RomePlaceCitySection
 
 object LocalRomePlacesDataProvider {
-
-    val defaultRomePlace = getRomePlacesData()[0]
+    val defaultCategory = RomePlaceCategory.ROMAN_REPUBLIC
+    val defaultRomePlace =
+        getRomePlacesData().filter { romePlace -> romePlace.category == defaultCategory }[0]
 
     fun getRomePlacesData(): List<RomePlace> {
         return listOf(
@@ -16,15 +18,15 @@ object LocalRomePlacesDataProvider {
                 descriptionResourceId = R.string.place_description,
                 imageResourceId = R.drawable.colosseum,
                 category = RomePlaceCategory.ROMAN_EMPIRE,
-                cItySection = RomePlaceCitySection.CENTRE,
+                citySection = RomePlaceCitySection.CENTRE,
             ),
             RomePlace(
                 id = 2,
                 titleResourceId = R.string.spanish_steps,
                 descriptionResourceId = R.string.place_description,
                 imageResourceId = R.drawable.spanish_steps,
-                category = RomePlaceCategory.BAROQUE_ROME,
-                cItySection = RomePlaceCitySection.CENTRE,
+                category = RomePlaceCategory.RENAISSANCE,
+                citySection = RomePlaceCitySection.CENTRE,
             ),
             RomePlace(
                 id = 3,
@@ -32,15 +34,15 @@ object LocalRomePlacesDataProvider {
                 descriptionResourceId = R.string.place_description,
                 imageResourceId = R.drawable.pantheon,
                 category = RomePlaceCategory.ROMAN_EMPIRE,
-                cItySection = RomePlaceCitySection.CAMPUS_MARTIUS,
+                citySection = RomePlaceCitySection.CAMPUS_MARTIUS,
             ),
             RomePlace(
                 id = 4,
                 titleResourceId = R.string.arch_of_constantine,
                 descriptionResourceId = R.string.place_description,
                 imageResourceId = R.drawable.arch_of_constantine,
-                category = RomePlaceCategory.ROMAN_EMPIRE,
-                cItySection = RomePlaceCitySection.COLOSSEUM_AREA,
+                category = RomePlaceCategory.BYZANTINE,
+                citySection = RomePlaceCitySection.COLOSSEUM_AREA,
             ),
             RomePlace(
                 id = 5,
@@ -48,7 +50,7 @@ object LocalRomePlacesDataProvider {
                 descriptionResourceId = R.string.place_description,
                 imageResourceId = R.drawable.curia_julia,
                 category = RomePlaceCategory.ROMAN_REPUBLIC,
-                cItySection = RomePlaceCitySection.FORUM_ROMANUM,
+                citySection = RomePlaceCitySection.FORUM_ROMANUM,
             ),
             RomePlace(
                 id = 6,
@@ -56,7 +58,7 @@ object LocalRomePlacesDataProvider {
                 descriptionResourceId = R.string.place_description,
                 imageResourceId = R.drawable.vittorio_emanuele_ii,
                 category = RomePlaceCategory.MODERN_ROME,
-                cItySection = RomePlaceCitySection.CENTRE,
+                citySection = RomePlaceCitySection.CENTRE,
             ),
             RomePlace(
                 id = 7,
@@ -64,7 +66,7 @@ object LocalRomePlacesDataProvider {
                 descriptionResourceId = R.string.place_description,
                 imageResourceId = R.drawable.peters_basilica,
                 category = RomePlaceCategory.RENAISSANCE,
-                cItySection = RomePlaceCitySection.VATICAN,
+                citySection = RomePlaceCitySection.VATICAN,
             ),
         )
     }

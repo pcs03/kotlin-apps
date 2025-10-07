@@ -31,10 +31,40 @@
         Praesent ultrices congue rutrum. Phasellus elementum ipsum ac convallis aliquam. Suspendisse
         eleifend eros a enim faucibus mollis. Nunc placerat, est vitae vestibulum blandit, dolor
         diam fringilla tellus, eu euismod mauris neque at neque.
+        \n\n
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        Praesent ultrices congue rutrum. Phasellus elementum ipsum ac convallis aliquam. Suspendisse
+        eleifend eros a enim faucibus mollis. Nunc placerat, est vitae vestibulum blandit, dolor
+        diam fringilla tellus, eu euismod mauris neque at neque.
+        \n\n
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        Praesent ultrices congue rutrum. Phasellus elementum ipsum ac convallis aliquam. Suspendisse
+        eleifend eros a enim faucibus mollis. Nunc placerat, est vitae vestibulum blandit, dolor
+        diam fringilla tellus, eu euismod mauris neque at neque.
+        \n\n
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        Praesent ultrices congue rutrum. Phasellus elementum ipsum ac convallis aliquam. Suspendisse
+        eleifend eros a enim faucibus mollis. Nunc placerat, est vitae vestibulum blandit, dolor
+        diam fringilla tellus, eu euismod mauris neque at neque.
     </string>
     <string name="arch_of_constantine">Arch of Constantine</string>
     <string name="pantheon">The Pantheon</string>
     <string name="curia_julia">Curia Julia</string>
     <string name="vittorio_emanuele_ii">Monument to Vittorio Emanuele II</string>
     <string name="peters_basilica">St. Peter\'s Basilica</string>
+
+    <string name="category_republic">Roman Republic</string>
+    <string name="category_empire">Roman Empire</string>
+    <string name="category_renaissance">Renaissance</string>
+    <string name="category_byzantine">Byzantine Empire</string>
+    <string name="category_modern">Modern Rome</string>
+
+    <string name="citysection_forum_romanum">Forum Romanum</string>
+    <string name="citysection_forum_imperial">Imperial Forum</string>
+    <string name="citysection_colosseum">Colloseum Area</string>
+    <string name="citysection_campus_martius">Campus Martius</string>
+    <string name="citysection_centre">City Centre</string>
+    <string name="citysection_vatican">Vatican City</string>
+    <string name="citysection_aventine">Aventine</string>
+    <string name="navigate_back">Navigate Back</string>
 </resources>

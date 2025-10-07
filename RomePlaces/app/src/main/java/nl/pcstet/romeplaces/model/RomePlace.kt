@@ -9,5 +9,5 @@ data class RomePlace(
     @StringRes val descriptionResourceId: Int,
     @DrawableRes val imageResourceId: Int,
     val category: RomePlaceCategory,
-    val cItySection: RomePlaceCitySection,
+    val citySection: RomePlaceCitySection,
 )

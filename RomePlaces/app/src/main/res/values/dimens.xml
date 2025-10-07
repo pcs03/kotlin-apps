@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="rome_places_list_spacing">8dp</dimen>
+    <dimen name="rome_places_list_horizontal_padding">16dp</dimen>
+    <dimen name="card_image_height">128dp</dimen>
+    <dimen name="navigation_icon_padding">8dp</dimen>
+    <dimen name="navigation_icon_size">50dp</dimen>
+    <dimen name="padding_medium">16dp</dimen>
+    <dimen name="padding_small">8dp</dimen>
+    <dimen name="detail_items_spacing">16dp</dimen>
+    <dimen name="top_bar_nav_icon_size">32dp</dimen>
+</resources>
