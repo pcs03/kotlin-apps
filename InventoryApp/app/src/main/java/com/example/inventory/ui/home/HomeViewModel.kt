@@ -16,16 +16,34 @@
 
 package com.example.inventory.ui.home
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.inventory.data.Item
+import com.example.inventory.data.ItemsRepository
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /**
  * ViewModel to retrieve all items in the Room database.
  */
-class HomeViewModel : ViewModel() {
+class HomeViewModel(private val itemsRepository: ItemsRepository) : ViewModel() {
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
     }
+
+    val homeUiState: StateFlow<HomeUiState> = itemsRepository.getAllItemsStream().map { itemsList ->
+        HomeUiState(itemsList)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+        initialValue = HomeUiState()
+    )
 }
 
 /**
