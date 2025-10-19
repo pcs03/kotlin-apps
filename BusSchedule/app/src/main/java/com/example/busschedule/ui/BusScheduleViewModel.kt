@@ -19,38 +19,49 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.busschedule.data.BusSchedule
+import com.example.busschedule.BusScheduleApplication
+import com.example.busschedule.data.Schedule
+import com.example.busschedule.data.ScheduleRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
-class BusScheduleViewModel: ViewModel() {
+class BusScheduleViewModel(private var scheduleRepository: ScheduleRepository) : ViewModel() {
+    fun getFullSchedule(): Flow<List<Schedule>> {
+        return scheduleRepository.getAllSchedulesStream()
+    }
 
     // Get example bus schedule
-    fun getFullSchedule(): Flow<List<BusSchedule>> = flowOf(
-        listOf(
-            BusSchedule(
-                1,
-                "Example Street",
-                0
-            )
-        )
-    )
+//    fun getFullSchedule(): Flow<List<Schedule>> = flowOf(
+//
+//        listOf(
+//            Schedule(
+//                1,
+//                "Example Street",
+//                0
+//            )
+//        )
+//    )
 
     // Get example bus schedule by stop
-    fun getScheduleFor(stopName: String): Flow<List<BusSchedule>> = flowOf(
-        listOf(
-            BusSchedule(
-                1,
-                "Example Street",
-                0
-            )
-        )
-    )
+    fun getScheduleFor(stopName: String): Flow<List<Schedule>>  {
+        return scheduleRepository.getScheduleStreamByStopName(stopName)
+    }
+
+//    = flowOf(
+//        listOf(
+//            Schedule(
+//                1,
+//                "Example Street",
+//                0
+//            )
+//        )
+//    )
 
     companion object {
         val factory : ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                BusScheduleViewModel()
+                val application = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as BusScheduleApplication
+                BusScheduleViewModel(application.container.scheduleRepository)
             }
         }
     }

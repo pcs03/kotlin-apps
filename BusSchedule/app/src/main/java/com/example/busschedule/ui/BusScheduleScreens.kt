@@ -29,8 +29,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -62,7 +60,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.busschedule.R
-import com.example.busschedule.data.BusSchedule
+import com.example.busschedule.data.Schedule
 import com.example.busschedule.ui.theme.BusScheduleTheme
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -101,7 +99,7 @@ fun BusScheduleApp(
         ) {
             composable(BusScheduleScreens.FullSchedule.name) {
                 FullScheduleScreen(
-                    busSchedules = fullSchedule,
+                    schedules = fullSchedule,
                     contentPadding = innerPadding,
                     onScheduleClick = { busStopName ->
                         navController.navigate(
@@ -121,7 +119,7 @@ fun BusScheduleApp(
                 val routeSchedule by viewModel.getScheduleFor(stopName).collectAsState(emptyList())
                 RouteScheduleScreen(
                     stopName = stopName,
-                    busSchedules = routeSchedule,
+                    schedules = routeSchedule,
                     contentPadding = innerPadding,
                     onBack = { onBackHandler() }
                 )
@@ -132,13 +130,13 @@ fun BusScheduleApp(
 
 @Composable
 fun FullScheduleScreen(
-    busSchedules: List<BusSchedule>,
+    schedules: List<Schedule>,
     onScheduleClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     BusScheduleScreen(
-        busSchedules = busSchedules,
+        schedules = schedules,
         onScheduleClick = onScheduleClick,
         contentPadding = contentPadding,
         modifier = modifier
@@ -148,14 +146,14 @@ fun FullScheduleScreen(
 @Composable
 fun RouteScheduleScreen(
     stopName: String,
-    busSchedules: List<BusSchedule>,
+    schedules: List<Schedule>,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     onBack: () -> Unit = {}
 ) {
     BackHandler { onBack() }
     BusScheduleScreen(
-        busSchedules = busSchedules,
+        schedules = schedules,
         modifier = modifier,
         contentPadding = contentPadding,
         stopName = stopName
@@ -164,7 +162,7 @@ fun RouteScheduleScreen(
 
 @Composable
 fun BusScheduleScreen(
-    busSchedules: List<BusSchedule>,
+    schedules: List<Schedule>,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     stopName: String? = null,
@@ -202,7 +200,7 @@ fun BusScheduleScreen(
             contentPadding = PaddingValues(
                 bottom = contentPadding.calculateBottomPadding()
             ),
-            busSchedules = busSchedules,
+            schedules = schedules,
             onScheduleClick = onScheduleClick
         )
     }
@@ -216,7 +214,7 @@ fun BusScheduleScreen(
  */
 @Composable
 fun BusScheduleDetails(
-    busSchedules: List<BusSchedule>,
+    schedules: List<Schedule>,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     onScheduleClick: ((String) -> Unit)? = null
@@ -226,7 +224,7 @@ fun BusScheduleDetails(
         contentPadding = contentPadding,
     ) {
         items(
-            items = busSchedules,
+            items = schedules,
             key = { busSchedule -> busSchedule.id }
         ) { schedule ->
             Row(
@@ -308,8 +306,8 @@ fun BusScheduleTopAppBar(
 fun FullScheduleScreenPreview() {
     BusScheduleTheme {
         FullScheduleScreen(
-            busSchedules = List(3) { index ->
-                BusSchedule(
+            schedules = List(3) { index ->
+                Schedule(
                     index,
                     "Main Street",
                     111111
@@ -326,8 +324,8 @@ fun RouteScheduleScreenPreview() {
     BusScheduleTheme {
         RouteScheduleScreen(
             stopName = "Main Street",
-            busSchedules = List(3) { index ->
-                BusSchedule(
+            schedules = List(3) { index ->
+                Schedule(
                     index,
                     "Main Street",
                     111111
