@@ -23,6 +23,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.inventory.data.Item
 import com.example.inventory.data.ItemsRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -38,6 +39,7 @@ class HomeViewModel(private val itemsRepository: ItemsRepository) : ViewModel() 
     }
 
     val homeUiState: StateFlow<HomeUiState> = itemsRepository.getAllItemsStream().map { itemsList ->
+        delay(2000)
         HomeUiState(itemsList)
     }.stateIn(
         scope = viewModelScope,

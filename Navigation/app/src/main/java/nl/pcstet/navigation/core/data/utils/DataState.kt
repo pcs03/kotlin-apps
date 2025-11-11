@@ -1,0 +1,32 @@
+package nl.pcstet.navigation.core.data.utils
+
+// Shamelessly copied from: https://github.com/shahzadansari/RickAndMorty/blob/main/core/src/main/java/com/example/core/DataState.kt
+
+sealed class DataState<T>(open val data: T? = null, open val cause: ApiException? = null) {
+    data class Loading<T>(val isLoading: Boolean = true) : DataState<T>()
+    data class Success<T>(override val data: T) : DataState<T>(data = data)
+    data class Error<T>(override val cause: ApiException) : DataState<T>(cause = cause)
+}
+
+sealed class ApiException(open val statusCode: Int = -1, open val errorMsg: String) : Exception(errorMsg) {
+    data class Generic(override val errorMsg: String = "Something went wrong. Please try again!") : ApiException(errorMsg = errorMsg)
+    data class HttpError(override val statusCode: Int, override val errorMsg: String = "Request could not be processed! Code :$statusCode") : ApiException(errorMsg = errorMsg)
+    data object Network : ApiException(errorMsg = "Failed to connect. Please try again!")
+}
+
+/** Inspired by: https://getstream.io/blog/modeling-retrofit-responses/ */
+fun <T : Any> DataState<T>.onLoading(onLoading: (Boolean) -> Unit): DataState<T> = apply {
+    onLoading(this is DataState.Loading)
+}
+
+fun <T : Any> DataState<T>.onSuccess(onSuccess: (T) -> Unit): DataState<T> = apply {
+    if (this is DataState.Success) {
+        onSuccess(data)
+    }
+}
+
+fun <T : Any> DataState<T>.onError(onError: (ApiException) -> Unit): DataState<T> = apply {
+    if (this is DataState.Error) {
+        onError(cause)
+    }
+}

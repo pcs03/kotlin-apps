@@ -20,6 +20,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.inventory.data.ItemsRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -45,6 +46,7 @@ class ItemDetailsViewModel(
     val uiState: StateFlow<ItemDetailsUiState> = itemsRepository.getItemStream(itemId)
         .filterNotNull()
         .map { item ->
+            delay(1000)
             ItemDetailsUiState(
                 itemDetails = item.toItemDetails(),
                 outOfStock = item.quantity <= 0,
