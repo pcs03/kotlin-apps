@@ -1,7 +1,6 @@
 package nl.pcstet.navigation.auth.data.network
 
 import io.ktor.client.HttpClient
-import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.request.header
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpHeaders
@@ -11,7 +10,7 @@ import kotlinx.coroutines.delay
 import nl.pcstet.navigation.auth.data.network.model.AuthenticateResponseDto
 import nl.pcstet.navigation.auth.data.network.model.LoginRequestDto
 import nl.pcstet.navigation.auth.data.network.model.LoginResponseDto
-import nl.pcstet.navigation.core.data.utils.ApiResponse
+import nl.pcstet.navigation.core.data.utils.ApiResult
 import nl.pcstet.navigation.core.data.utils.DataState
 import nl.pcstet.navigation.core.data.utils.safeRequest
 import nl.pcstet.navigation.core.data.utils.toApiException
@@ -20,6 +19,7 @@ class DummyJsonApiService(
     private val authHttpClient: HttpClient
 ) : ApiService {
     override suspend fun login(loginRequestDto: LoginRequestDto): DataState<LoginResponseDto> {
+        delay(1000)
         val response = authHttpClient.safeRequest<LoginResponseDto> {
             url {
                 path("auth/login")
@@ -29,8 +29,8 @@ class DummyJsonApiService(
         }
 
         return when(response) {
-            is ApiResponse.Success -> DataState.Success(data = response.data)
-            is ApiResponse.Error -> DataState.Error(cause = response.cause.toApiException())
+            is ApiResult.Success -> DataState.Success(data = response.data)
+            is ApiResult.Failure -> DataState.Error(cause = response.cause.toApiException())
         }
     }
 
@@ -44,8 +44,8 @@ class DummyJsonApiService(
         }
 
         return when(response) {
-            is ApiResponse.Success -> DataState.Success(data = response.data)
-            is ApiResponse.Error -> DataState.Error(cause = response.cause.toApiException())
+            is ApiResult.Success -> DataState.Success(data = response.data)
+            is ApiResult.Failure -> DataState.Error(cause = response.cause.toApiException())
         }
     }
 

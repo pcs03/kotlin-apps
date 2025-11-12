@@ -77,31 +77,31 @@ fun provideHttpClient(engine: HttpClientEngine) = HttpClient(engine) {
     }
 
     // Handle exceptions and HTTP errors
-    HttpResponseValidator {
-        handleResponseExceptionWithRequest { cause, _ ->
-            (cause as? Exception)?.toApiException()?.let {
-                throw it
-            }
-        }
-        validateResponse { response ->
-            if (!response.status.isSuccess()) {
-                val failureReason = when (response.status) {
-                    HttpStatusCode.Unauthorized -> "Unauthorized request"
-                    HttpStatusCode.Forbidden -> "${response.status.value} Missing API key"
-                    HttpStatusCode.NotFound -> "Invalid request"
-                    HttpStatusCode.RequestTimeout -> "Network timeout"
-                    in HttpStatusCode.InternalServerError..HttpStatusCode.GatewayTimeout -> "Server error"
-                    else -> "Network error"
-                }
-
-                throw HttpExceptions(
-                    response = response,
-                    failureReason = failureReason,
-                    cachedResponseText = response.bodyAsText()
-                )
-            }
-        }
-    }
+//    HttpResponseValidator {
+//        handleResponseExceptionWithRequest { cause, _ ->
+//            (cause as? Exception)?.toApiException()?.let {
+//                throw it
+//            }
+//        }
+//        validateResponse { response ->
+//            if (!response.status.isSuccess()) {
+//                val failureReason = when (response.status) {
+//                    HttpStatusCode.Unauthorized -> "Unauthorized request"
+//                    HttpStatusCode.Forbidden -> "${response.status.value} Missing API key"
+//                    HttpStatusCode.NotFound -> "Invalid request"
+//                    HttpStatusCode.RequestTimeout -> "Network timeout"
+//                    in HttpStatusCode.InternalServerError..HttpStatusCode.GatewayTimeout -> "Server error"
+//                    else -> "Network error"
+//                }
+//
+//                throw HttpExceptions(
+//                    response = response,
+//                    failureReason = failureReason,
+//                    cachedResponseText = response.bodyAsText()
+//                )
+//            }
+//        }
+//    }
 }
 
 val authModule = module {
