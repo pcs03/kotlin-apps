@@ -10,28 +10,22 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import nl.pcstet.navigation.auth.data.repository.AuthRepository
+import nl.pcstet.navigation.core.data.utils.AuthState
 
 class RootViewModel(
     private val authRepository: AuthRepository,
 ) : ViewModel() {
-    enum class AuthState { LOADING, AUTHENTICATED, UNAUTHENTICATED }
-
-    val authState: StateFlow<AuthState> = authRepository.isAuthenticated
-        .onEach { Log.d("VM", it.toString()) }
-        .map { isAuthenticated ->
-            if (isAuthenticated) AuthState.AUTHENTICATED
-            else AuthState.UNAUTHENTICATED
-        }
+    val authState: StateFlow<AuthState> = authRepository.authState
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000L),
-            initialValue = AuthState.LOADING
+            initialValue = AuthState.Loading
         )
 
     init {
         viewModelScope.launch {
             authState.collect { value ->
-                Log.d("VM", "AS: $value")
+                Log.d("RootViewModel", "authStateFlow: $value")
             }
         }
     }

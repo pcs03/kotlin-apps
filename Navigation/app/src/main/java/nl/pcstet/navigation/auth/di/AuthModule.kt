@@ -18,6 +18,9 @@ import io.ktor.http.URLProtocol
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
 import nl.pcstet.navigation.auth.data.network.ApiService
 import nl.pcstet.navigation.auth.data.network.DummyJsonApiService
@@ -75,33 +78,6 @@ fun provideHttpClient(engine: HttpClientEngine) = HttpClient(engine) {
         }
         level = LogLevel.ALL
     }
-
-    // Handle exceptions and HTTP errors
-//    HttpResponseValidator {
-//        handleResponseExceptionWithRequest { cause, _ ->
-//            (cause as? Exception)?.toApiException()?.let {
-//                throw it
-//            }
-//        }
-//        validateResponse { response ->
-//            if (!response.status.isSuccess()) {
-//                val failureReason = when (response.status) {
-//                    HttpStatusCode.Unauthorized -> "Unauthorized request"
-//                    HttpStatusCode.Forbidden -> "${response.status.value} Missing API key"
-//                    HttpStatusCode.NotFound -> "Invalid request"
-//                    HttpStatusCode.RequestTimeout -> "Network timeout"
-//                    in HttpStatusCode.InternalServerError..HttpStatusCode.GatewayTimeout -> "Server error"
-//                    else -> "Network error"
-//                }
-//
-//                throw HttpExceptions(
-//                    response = response,
-//                    failureReason = failureReason,
-//                    cachedResponseText = response.bodyAsText()
-//                )
-//            }
-//        }
-//    }
 }
 
 val authModule = module {
@@ -109,6 +85,10 @@ val authModule = module {
     single<HttpClient>(named("auth")) { provideHttpClient(get()) }
 
     single<ApiService> { DummyJsonApiService(get(named("auth"))) }
+
+    single<CoroutineScope> { CoroutineScope(SupervisorJob() + Dispatchers.IO) }
+
     singleOf(::AuthRepositoryImpl) { bind<AuthRepository>() }
+
     viewModelOf(::LoginViewModel)
 }

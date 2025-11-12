@@ -18,34 +18,23 @@ import nl.pcstet.navigation.core.data.utils.toApiException
 class DummyJsonApiService(
     private val authHttpClient: HttpClient
 ) : ApiService {
-    override suspend fun login(loginRequestDto: LoginRequestDto): DataState<LoginResponseDto> {
-        delay(1000)
-        val response = authHttpClient.safeRequest<LoginResponseDto> {
+    override suspend fun login(loginRequestDto: LoginRequestDto): ApiResult<LoginResponseDto> {
+        return authHttpClient.safeRequest<LoginResponseDto> {
             url {
                 path("auth/login")
             }
             method = HttpMethod.Post
             setBody(loginRequestDto)
         }
-
-        return when(response) {
-            is ApiResult.Success -> DataState.Success(data = response.data)
-            is ApiResult.Failure -> DataState.Error(cause = response.cause.toApiException())
-        }
     }
 
-    override suspend fun authenticate(accessToken: String): DataState<AuthenticateResponseDto> {
-        val response = authHttpClient.safeRequest<AuthenticateResponseDto> {
+    override suspend fun authenticate(accessToken: String): ApiResult<AuthenticateResponseDto> {
+        return authHttpClient.safeRequest<AuthenticateResponseDto> {
             url {
                 path("auth/me")
             }
             method = HttpMethod.Get
             header(HttpHeaders.Authorization, "Bearer $accessToken")
-        }
-
-        return when(response) {
-            is ApiResult.Success -> DataState.Success(data = response.data)
-            is ApiResult.Failure -> DataState.Error(cause = response.cause.toApiException())
         }
     }
 

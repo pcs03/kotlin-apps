@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.Serializable
 import nl.pcstet.navigation.auth.presentation.login.LoginScreen
 import nl.pcstet.navigation.auth.presentation.login.LoginViewModel
+import nl.pcstet.navigation.core.data.utils.AuthState
 import nl.pcstet.navigation.core.presentation.components.LoadingIndicator
 import nl.pcstet.navigation.home.presentation.HomeScreen
 import nl.pcstet.navigation.home.presentation.HomeViewModel
@@ -44,12 +45,12 @@ fun RootNavigation() {
     val authState by rootViewModel.authState.collectAsState()
 
     when (authState) {
-        RootViewModel.AuthState.LOADING -> {
+        AuthState.Loading, AuthState.Unknown -> {
             LoadingIndicator(Modifier.fillMaxSize())
         }
 
         else -> {
-            val startDestination = if (authState == RootViewModel.AuthState.AUTHENTICATED) {
+            val startDestination = if (authState == AuthState.Authenticated){
                 Route.MainGraph
             } else {
                 Route.AuthGraph

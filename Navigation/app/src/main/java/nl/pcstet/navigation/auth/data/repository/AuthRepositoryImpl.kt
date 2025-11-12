@@ -1,38 +1,50 @@
 package nl.pcstet.navigation.auth.data.repository
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import nl.pcstet.navigation.auth.data.network.ApiService
 import nl.pcstet.navigation.auth.data.network.model.LoginRequestDto
 import nl.pcstet.navigation.core.data.local.UserPreferencesDataStore
-import nl.pcstet.navigation.core.data.utils.DataState
+import nl.pcstet.navigation.core.data.utils.ApiResult
+import nl.pcstet.navigation.core.data.utils.AuthState
 import nl.pcstet.navigation.core.data.utils.toApiException
 
 class AuthRepositoryImpl(
     private val apiService: ApiService,
     private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val coroutineScope: CoroutineScope
 ) : AuthRepository {
-    private val accessToken: Flow<String?> = userPreferencesDataStore.authToken
-    override val isAuthenticated: Flow<Boolean> = accessToken.map { value ->
-        if (!value.isNullOrBlank()) {
-            authenticate(value)
-        } else {
-            false
-        }
-//
-//
-//        authenticate(value)
+    private val _authState = MutableStateFlow<AuthState>(AuthState.Unknown)
+    override val authState: StateFlow<AuthState> = _authState.asStateFlow()
+    private var validatedToken: String? = null
 
-//        // If token exists, emit true
-//        // TODO: authenticate with client
-//        !value.isNullOrBlank()
+    init {
+        coroutineScope.launch {
+            userPreferencesDataStore.authToken.collect { accessToken ->
+                if (accessToken.isNullOrBlank()) {
+                    _authState.value = AuthState.InvalidToken
+                    validatedToken = null
+                } else if (accessToken == validatedToken) {
+                    if (_authState.value !is AuthState.Authenticated) {
+                        _authState.value = AuthState.Authenticated
+                    }
+                } else {
+                    authenticate(accessToken)
+                }
+            }
+        }
     }
+
 
     override suspend fun login(
         email: String,
         password: String,
-    ): Result<Unit> {
+    ) {
         val result = apiService.login(
             LoginRequestDto(
                 username = email,
@@ -40,21 +52,44 @@ class AuthRepositoryImpl(
             )
         )
 
-        return if (result is DataState.Success) {
-            val token = result.data.accessToken
-            userPreferencesDataStore.saveToken(token)
-            Result.success(Unit)
-        } else {
-            Result.failure(result.cause?.toApiException() ?: Exception("Login failed"))
+        return when (result) {
+            is ApiResult.Success -> {
+                val token = result.data.accessToken
+                validatedToken = token
+                userPreferencesDataStore.saveToken(token)
+                _authState.value = AuthState.Authenticated
+            }
+
+            is ApiResult.Failure -> {
+                val httpCode = result.cause.statusCode
+                val errorState = when (httpCode) {
+                    400 -> AuthState.Unauthenticated(message = "Invalid credentials")
+                    else -> AuthState.Unauthenticated(message = result.cause.message.toString())
+                }
+                _authState.value = errorState
+            }
         }
     }
 
     override suspend fun logout() {
+        validatedToken = null
         userPreferencesDataStore.clearToken()
+        _authState.value = AuthState.InvalidToken
     }
 
-    suspend fun authenticate(token: String): Boolean {
+    suspend fun authenticate(token: String) {
         val result = apiService.authenticate(accessToken = token)
-        return result is DataState.Success
+
+        when (result) {
+            is ApiResult.Success -> {
+                validatedToken = token
+                _authState.value = AuthState.Authenticated
+            }
+
+            is ApiResult.Failure -> {
+                validatedToken = null
+                _authState.value = AuthState.Unauthenticated(result.cause.message.toString())
+            }
+        }
     }
 }

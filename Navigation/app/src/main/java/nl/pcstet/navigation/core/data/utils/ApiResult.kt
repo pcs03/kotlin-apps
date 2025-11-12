@@ -8,9 +8,6 @@ import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.request
 import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.isSuccess
 import java.io.IOException
 import java.net.ConnectException
 import java.net.SocketTimeoutException
@@ -36,6 +33,12 @@ suspend inline fun <reified T> HttpClient.safeRequest(block: HttpRequestBuilder.
 sealed class ApiResult<T>(open val data: T? = null, open val cause: ApiException? = null) {
     class Success<T>(override val data: T) : ApiResult<T>(data)
     class Failure<T>(override val cause: ApiException) : ApiResult<T>(cause = cause)
+}
+
+sealed class ApiException(open val statusCode: Int = -1, open val errorMsg: String) : Exception(errorMsg) {
+    data class Generic(override val errorMsg: String = "Something went wrong. Please try again!") : ApiException(errorMsg = errorMsg)
+    data class HttpError(override val statusCode: Int, override val errorMsg: String = "Request could not be processed! Code :$statusCode") : ApiException(errorMsg = errorMsg)
+    data object Network : ApiException(errorMsg = "Failed to connect. Please try again!")
 }
 
 fun Exception.toApiException(): ApiException {
