@@ -10,16 +10,18 @@ import kotlinx.coroutines.delay
 import nl.pcstet.navigation.auth.data.network.model.AuthenticateResponseDto
 import nl.pcstet.navigation.auth.data.network.model.LoginRequestDto
 import nl.pcstet.navigation.auth.data.network.model.LoginResponseDto
+import nl.pcstet.navigation.core.data.network.ApiClientHolder
 import nl.pcstet.navigation.core.data.utils.ApiResult
 import nl.pcstet.navigation.core.data.utils.DataState
 import nl.pcstet.navigation.core.data.utils.safeRequest
 import nl.pcstet.navigation.core.data.utils.toApiException
 
 class DummyJsonApiService(
-    private val authHttpClient: HttpClient
+    private val apiClientHolder: ApiClientHolder,
 ) : ApiService {
     override suspend fun login(loginRequestDto: LoginRequestDto): ApiResult<LoginResponseDto> {
-        return authHttpClient.safeRequest<LoginResponseDto> {
+        val client = apiClientHolder.getClient()
+        return client.safeRequest<LoginResponseDto> {
             url {
                 path("auth/login")
             }
@@ -29,7 +31,8 @@ class DummyJsonApiService(
     }
 
     override suspend fun authenticate(accessToken: String): ApiResult<AuthenticateResponseDto> {
-        return authHttpClient.safeRequest<AuthenticateResponseDto> {
+        val client = apiClientHolder.getClient()
+        return client.safeRequest<AuthenticateResponseDto> {
             url {
                 path("auth/me")
             }

@@ -1,10 +1,7 @@
-package nl.pcstet.navigation.navigation.presentation
+package nl.pcstet.navigation.main.presentation
 
-import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -12,15 +9,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.Serializable
 import nl.pcstet.navigation.auth.presentation.login.LoginScreen
 import nl.pcstet.navigation.auth.presentation.login.LoginViewModel
+import nl.pcstet.navigation.core.data.network.ApiClientHolder
 import nl.pcstet.navigation.core.data.utils.AuthState
 import nl.pcstet.navigation.core.presentation.components.LoadingIndicator
 import nl.pcstet.navigation.home.presentation.HomeScreen
 import nl.pcstet.navigation.home.presentation.HomeViewModel
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 sealed interface Route {
@@ -45,12 +42,12 @@ fun RootNavigation() {
     val authState by rootViewModel.authState.collectAsState()
 
     when (authState) {
-        AuthState.Loading, AuthState.Unknown -> {
+        is AuthState.Loading, is AuthState.Unknown -> {
             LoadingIndicator(Modifier.fillMaxSize())
         }
 
-        else -> {
-            val startDestination = if (authState == AuthState.Authenticated){
+        is AuthState.Unauthenticated, is AuthState.Authenticated, is AuthState.InvalidToken -> {
+            val startDestination = if (authState is AuthState.Authenticated) {
                 Route.MainGraph
             } else {
                 Route.AuthGraph

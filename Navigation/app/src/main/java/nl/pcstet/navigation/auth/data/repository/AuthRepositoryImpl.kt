@@ -1,18 +1,15 @@
 package nl.pcstet.navigation.auth.data.repository
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import nl.pcstet.navigation.auth.data.network.ApiService
 import nl.pcstet.navigation.auth.data.network.model.LoginRequestDto
-import nl.pcstet.navigation.core.data.local.UserPreferencesDataStore
+import nl.pcstet.navigation.main.data.local.UserPreferencesDataStore
 import nl.pcstet.navigation.core.data.utils.ApiResult
 import nl.pcstet.navigation.core.data.utils.AuthState
-import nl.pcstet.navigation.core.data.utils.toApiException
 
 class AuthRepositoryImpl(
     private val apiService: ApiService,
@@ -31,7 +28,7 @@ class AuthRepositoryImpl(
                     validatedToken = null
                 } else if (accessToken == validatedToken) {
                     if (_authState.value !is AuthState.Authenticated) {
-                        _authState.value = AuthState.Authenticated
+                        _authState.value = AuthState.Authenticated(accessToken = accessToken)
                     }
                 } else {
                     authenticate(accessToken)
@@ -56,8 +53,8 @@ class AuthRepositoryImpl(
             is ApiResult.Success -> {
                 val token = result.data.accessToken
                 validatedToken = token
-                userPreferencesDataStore.saveToken(token)
-                _authState.value = AuthState.Authenticated
+                userPreferencesDataStore.saveAuthToken(token)
+                _authState.value = AuthState.Authenticated(accessToken = token)
             }
 
             is ApiResult.Failure -> {
@@ -73,7 +70,7 @@ class AuthRepositoryImpl(
 
     override suspend fun logout() {
         validatedToken = null
-        userPreferencesDataStore.clearToken()
+        userPreferencesDataStore.clearAuthToken()
         _authState.value = AuthState.InvalidToken
     }
 
@@ -83,12 +80,12 @@ class AuthRepositoryImpl(
         when (result) {
             is ApiResult.Success -> {
                 validatedToken = token
-                _authState.value = AuthState.Authenticated
+                _authState.value = AuthState.Authenticated(accessToken = token)
             }
 
             is ApiResult.Failure -> {
                 validatedToken = null
-                _authState.value = AuthState.Unauthenticated(result.cause.message.toString())
+                _authState.value = AuthState.InvalidToken
             }
         }
     }

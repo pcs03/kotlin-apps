@@ -26,8 +26,8 @@ class LoginViewModel(
     val uiState: StateFlow<LoginUiState> = authState.map { authState ->
         Log.d("LoginViewModel", "Received authState: $authState")
         when (authState) {
-            is AuthState.InvalidToken, AuthState.Authenticated -> LoginUiState.Idle
-            is AuthState.Loading, AuthState.Unknown -> LoginUiState.Loading
+            is AuthState.InvalidToken, is AuthState.Authenticated -> LoginUiState.Idle
+            is AuthState.Loading, is AuthState.Unknown -> LoginUiState.Loading
             is AuthState.Unauthenticated -> LoginUiState.Error(authState.message)
         }
     }
