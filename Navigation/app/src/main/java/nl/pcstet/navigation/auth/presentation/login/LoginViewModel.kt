@@ -17,6 +17,7 @@ sealed interface LoginUiState {
     data object Idle : LoginUiState
     data object Loading : LoginUiState
     data class Error(val message: String) : LoginUiState
+    data object Success : LoginUiState
 }
 
 class LoginViewModel(
@@ -26,9 +27,10 @@ class LoginViewModel(
     val uiState: StateFlow<LoginUiState> = authState.map { authState ->
         Log.d("LoginViewModel", "Received authState: $authState")
         when (authState) {
-            is AuthState.InvalidToken, is AuthState.Authenticated -> LoginUiState.Idle
+            is AuthState.InvalidToken -> LoginUiState.Idle
             is AuthState.Loading, is AuthState.Unknown -> LoginUiState.Loading
             is AuthState.Unauthenticated -> LoginUiState.Error(authState.message)
+            is AuthState.Authenticated -> LoginUiState.Success
         }
     }
         .stateIn(

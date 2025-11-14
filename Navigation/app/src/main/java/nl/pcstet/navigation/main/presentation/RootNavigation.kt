@@ -12,12 +12,10 @@ import androidx.navigation.compose.rememberNavController
 import kotlinx.serialization.Serializable
 import nl.pcstet.navigation.auth.presentation.login.LoginScreen
 import nl.pcstet.navigation.auth.presentation.login.LoginViewModel
-import nl.pcstet.navigation.core.data.network.ApiClientHolder
 import nl.pcstet.navigation.core.data.utils.AuthState
 import nl.pcstet.navigation.core.presentation.components.LoadingIndicator
 import nl.pcstet.navigation.home.presentation.HomeScreen
 import nl.pcstet.navigation.home.presentation.HomeViewModel
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 sealed interface Route {
@@ -28,10 +26,25 @@ sealed interface Route {
     data object LoginScreen : Route
 
     @Serializable
-    data object MainGraph : Route
+    data object AppRootGraph : Route
 
     @Serializable
     data object HomeScreen : Route
+
+    @Serializable
+    data object OnboardingGraph : Route
+
+    @Serializable
+    data object AuthRootGraph : Route
+
+    @Serializable
+    data object AuthLoading : Route
+
+    @Serializable
+    data object MainLoading : Route
+
+    @Serializable
+    data object MainGraph : Route
 }
 
 @Composable
@@ -48,7 +61,7 @@ fun RootNavigation() {
 
         is AuthState.Unauthenticated, is AuthState.Authenticated, is AuthState.InvalidToken -> {
             val startDestination = if (authState is AuthState.Authenticated) {
-                Route.MainGraph
+                Route.AppRootGraph
             } else {
                 Route.AuthGraph
             }
@@ -62,11 +75,11 @@ fun RootNavigation() {
                 ) {
                     composable<Route.LoginScreen> {
                         val loginViewModel = koinViewModel<LoginViewModel>()
-                        LoginScreen(viewModel = loginViewModel)
+                        LoginScreen(viewModel = loginViewModel, onLoginSuccess = {})
                     }
                 }
 
-                navigation<Route.MainGraph>(
+                navigation<Route.AppRootGraph>(
                     startDestination = Route.HomeScreen
                 ) {
                     composable<Route.HomeScreen> {

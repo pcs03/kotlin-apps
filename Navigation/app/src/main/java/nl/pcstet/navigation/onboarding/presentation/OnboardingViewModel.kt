@@ -84,4 +84,8 @@ class OnboardingViewModel(
             Log.d("OnboardingViewModel", result.toString())
         }
     }
+
+    init {
+        Log.d("OnboardingViewModel", "Instantiated")
+    }
 }

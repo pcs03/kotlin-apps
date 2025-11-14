@@ -28,6 +28,7 @@ import nl.pcstet.navigation.onboarding.presentation.ApiTestUiState
 fun OnboardingApiTestScreen(
     apiTestUiState: ApiTestUiState,
     startApiTest: () -> Unit,
+    onApiTestFinish: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
     LaunchedEffect(Unit) {
@@ -65,9 +66,9 @@ fun OnboardingApiTestScreen(
                     style = MaterialTheme.typography.headlineSmall
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-//                Button(onClick = onFinishOnboarding ) {
-//                    Text("Go to Home")
-//                }
+                Button(onClick = onApiTestFinish ) {
+                    Text("Go to Home")
+                }
             }
 
             is ApiTestUiState.Error -> {

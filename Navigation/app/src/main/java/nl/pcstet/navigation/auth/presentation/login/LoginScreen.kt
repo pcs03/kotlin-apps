@@ -25,11 +25,16 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel
+    viewModel: LoginViewModel,
+    onLoginSuccess: () -> Unit,
 ) {
     val email by viewModel.email.collectAsState()
     val password by viewModel.password.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
+
+    if (uiState is LoginUiState.Success) {
+        onLoginSuccess()
+    }
 
     Scaffold { innerPadding ->
         Column(

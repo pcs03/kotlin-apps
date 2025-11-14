@@ -7,7 +7,9 @@ import androidx.datastore.preferences.preferencesDataStore
 import nl.pcstet.navigation.main.data.local.UserPreferencesDataStore
 import nl.pcstet.navigation.main.presentation.RootViewModel
 import nl.pcstet.navigation.main.presentation.MainViewModel
+import nl.pcstet.navigation.main.presentation.NestedMainViewModel
 import org.koin.android.ext.koin.androidContext
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -19,5 +21,6 @@ val mainAppModule = module {
 
     viewModelOf(::MainViewModel)
     viewModelOf(::RootViewModel)
+    viewModelOf(::NestedMainViewModel)
 }
 
