@@ -44,7 +44,7 @@ fun OnboardingApiInputScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         SchemeSelector(
-            selectedScheme = apiInputUiState.scheme,
+            selectedScheme = apiInputUiState.protocol,
             onSchemeChange = onApiSchemeChange
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -53,33 +53,43 @@ fun OnboardingApiInputScreen(
             value = apiInputUiState.host,
             onValueChange = onApiHostChange,
             label = { Text("API Host") },
-            prefix = { Text(text = "${apiInputUiState.scheme}://") },
+//            placeholder = { Text("e.g. example.com") },
+            isError = apiInputUiState.pathError != null,
+            singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            isError = false,
-            singleLine = true
         )
-
-        OutlinedTextField(
-            value = apiInputUiState.apiPath,
-            onValueChange = onApiPathChange,
-            label = { Text("API Path") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = false,
-            singleLine = true
-        )
-
-        if (apiInputUiState.validationError != null) {
+        if (apiInputUiState.hostError != null) {
             Text(
-                text = apiInputUiState.validationError,
+                text = apiInputUiState.hostError,
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, top = 4.dp)
+                modifier = Modifier.fillMaxWidth()
             )
         }
 
-        Button(onClick = onNextClicked, enabled = apiInputUiState.isUrlValid) {
+        OutlinedTextField(
+            value = apiInputUiState.path,
+            onValueChange = onApiPathChange,
+            label = { Text("API Path") },
+//            placeholder = { Text("e.g. /api") },
+            prefix = { Text("/") },
+            isError = apiInputUiState.pathError != null,
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        if (apiInputUiState.pathError != null) {
+            Text(
+                text = apiInputUiState.pathError,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        Button(
+            onClick = onNextClicked,
+            enabled = apiInputUiState.hostError == null && apiInputUiState.pathError == null
+        ) {
             Text("Test API connection")
         }
     }
@@ -88,7 +98,7 @@ fun OnboardingApiInputScreen(
 @Composable
 private fun SchemeSelector(
     selectedScheme: String,
-    onSchemeChange: (String) -> Unit
+    onSchemeChange: (String) -> Unit,
 ) {
     val options = listOf("https", "http")
     Row(

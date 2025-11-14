@@ -27,9 +27,6 @@ sealed interface AuthRoute {
     @Serializable
     data object Graph : AuthRoute
 
-    //    @Serializable
-//    data object Loading : AuthRoute
-//
     @Serializable
     data object Login : AuthRoute
 }
@@ -48,50 +45,3 @@ fun NavGraphBuilder.authDestination(
         }
     }
 }
-
-
-//@Composable
-//fun RootNavigation() {
-//    val navController = rememberNavController()
-//
-//    val rootViewModel = koinViewModel<RootViewModel>()
-//    val authState by rootViewModel.authState.collectAsState()
-//
-//    when (authState) {
-//        is AuthState.Loading, is AuthState.Unknown -> {
-//            LoadingIndicator(Modifier.fillMaxSize())
-//        }
-//
-//        is AuthState.Unauthenticated, is AuthState.Authenticated, is AuthState.InvalidToken -> {
-//            val startDestination = if (authState is AuthState.Authenticated) {
-//                Route.AppRootGraph
-//            } else {
-//                Route.AuthGraph
-//            }
-//
-//            NavHost(
-//                navController = navController,
-//                startDestination = startDestination,
-//            ) {
-//                navigation<Route.AuthGraph>(
-//                    startDestination = Route.LoginScreen
-//                ) {
-//                    composable<Route.LoginScreen> {
-//                        val loginViewModel = koinViewModel<LoginViewModel>()
-//                        LoginScreen(viewModel = loginViewModel)
-//                    }
-//                }
-//
-//                navigation<Route.AppRootGraph>(
-//                    startDestination = Route.HomeScreen
-//                ) {
-//                    composable<Route.HomeScreen> {
-//                        val homeViewModel = koinViewModel<HomeViewModel>()
-//                        HomeScreen(viewModel = homeViewModel)
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//}

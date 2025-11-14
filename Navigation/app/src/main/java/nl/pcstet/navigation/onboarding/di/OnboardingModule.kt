@@ -9,8 +9,6 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val onboardingModule = module {
-
-//    single<HttpClient>(named("apiTest")) { params -> provideHttpClient(get(), params.get()) }
     singleOf(::OnboardingApiService)
     viewModelOf(::OnboardingViewModel)
 }

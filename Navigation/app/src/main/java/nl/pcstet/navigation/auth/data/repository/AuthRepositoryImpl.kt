@@ -1,5 +1,6 @@
 package nl.pcstet.navigation.auth.data.repository
 
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +23,13 @@ class AuthRepositoryImpl(
 
     init {
         coroutineScope.launch {
+            authState.collect { authState ->
+                Log.d("AuthRepository", authState.toString())
+            }
+        }
+        coroutineScope.launch {
             userPreferencesDataStore.authToken.collect { accessToken ->
+                Log.d("AuthRepository", accessToken.toString())
                 if (accessToken.isNullOrBlank()) {
                     _authState.value = AuthState.InvalidToken
                     validatedToken = null

@@ -16,8 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel) {
-
+fun HomeScreen(
+    onLogout: () -> Unit,
+) {
     Scaffold { innerPadding ->
         Column(
             verticalArrangement = Arrangement.Center,
@@ -39,7 +40,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
             Spacer(Modifier.height(32.dp))
 
             Button(
-                onClick = { viewModel.logout() },
+                onClick = onLogout,
             ) {
                 Text("Logout")
             }

@@ -3,25 +3,20 @@ package nl.pcstet.navigation.onboarding.presentation
 import android.util.Log
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import androidx.navigation.compose.rememberNavController
 import kotlinx.serialization.Serializable
 import nl.pcstet.navigation.main.presentation.AppRootRoute
-import nl.pcstet.navigation.main.presentation.NestedMainViewModel
-import nl.pcstet.navigation.main.presentation.Route
+import nl.pcstet.navigation.main.presentation.MainViewModel
 import nl.pcstet.navigation.main.presentation.utils.sharedViewModel
 import nl.pcstet.navigation.onboarding.presentation.screens.OnboardingApiInputScreen
 import nl.pcstet.navigation.onboarding.presentation.screens.OnboardingApiTestScreen
 import nl.pcstet.navigation.onboarding.presentation.screens.OnboardingWelcomeScreen
-import org.koin.compose.viewmodel.koinViewModel
 
 sealed interface OnboardingRoute {
     @Serializable
@@ -53,29 +48,33 @@ fun NavGraphBuilder.onboardingDestination(
         }
 
         composable<OnboardingRoute.ApiInput> { backStackEntry ->
-            val onboardingViewModel = backStackEntry.sharedViewModel<OnboardingViewModel>(navController)
+            val onboardingViewModel =
+                backStackEntry.sharedViewModel<OnboardingViewModel>(navController)
             val apiInputUiState by onboardingViewModel.apiInputUiState.collectAsState()
 
             OnboardingApiInputScreen(
                 apiInputUiState = apiInputUiState,
                 onApiSchemeChange = { onboardingViewModel.changeApiScheme(it) },
                 onApiHostChange = { onboardingViewModel.changeApiHost(it) },
-                onApiPathChange = {onboardingViewModel.changeApiPath(it)},
+                onApiPathChange = { onboardingViewModel.changeApiPath(it) },
                 onNextClicked = { navController.navigate(OnboardingRoute.ApiTest) },
             )
         }
         composable<OnboardingRoute.ApiTest> { backStackEntry ->
-            val onboardingViewModel = backStackEntry.sharedViewModel<OnboardingViewModel>(navController)
+            val onboardingViewModel =
+                backStackEntry.sharedViewModel<OnboardingViewModel>(navController)
             val apiTestUiState by onboardingViewModel.apiTestUiState.collectAsState()
 
             OnboardingApiTestScreen(
                 apiTestUiState = apiTestUiState,
                 startApiTest = onboardingViewModel::startApiTest,
-                onApiTestFinish = { navController.navigate(AppRootRoute.Graph) {
-                    popUpTo(OnboardingRoute.Graph) {
-                        inclusive = true
+                onApiTestFinish = {
+                    navController.navigate(AppRootRoute.Graph) {
+                        popUpTo(OnboardingRoute.Graph) {
+                            inclusive = true
+                        }
                     }
-                } },
+                },
                 onNavigateBack = {
                     navController.popBackStack()
                 }
@@ -91,47 +90,3 @@ fun NavGraphBuilder.onboardingDestination(
 
     }
 }
-
-//@Composable
-//fun OnboardingNavigation(
-//    modifier: Modifier = Modifier
-//) {
-//    val navController = rememberNavController()
-//    val onboardingViewModel = koinViewModel<OnboardingViewModel>()
-//    val apiInputUiState by onboardingViewModel.apiInputUiState.collectAsState()
-//    val apiTestUiState by onboardingViewModel.apiTestUiState.collectAsState()
-//
-//    NavHost(
-//        navController = navController,
-//        startDestination = OnboardingRoute.Graph,
-//        modifier = modifier
-//    ) {
-//        navigation<OnboardingRoute.Graph>(
-//            startDestination = OnboardingRoute.Welcome
-//        ) {
-//            composable<OnboardingRoute.Welcome> {
-//                OnboardingWelcomeScreen(
-//                    onNextClick = { navController.navigate(OnboardingRoute.ApiInput) }
-//                )
-//            }
-//            composable<OnboardingRoute.ApiInput> {
-//                OnboardingApiInputScreen(
-//                    apiInputUiState = apiInputUiState,
-//                    onApiSchemeChange = { onboardingViewModel.changeApiScheme(it) },
-//                    onApiHostChange = { onboardingViewModel.changeApiHost(it) },
-//                    onApiPathChange = {onboardingViewModel.changeApiPath(it)},
-//                    onNextClicked = { navController.navigate(OnboardingRoute.ApiTest) },
-//                )
-//            }
-//            composable<OnboardingRoute.ApiTest> {
-//                OnboardingApiTestScreen(
-//                    apiTestUiState = apiTestUiState,
-//                    startApiTest = onboardingViewModel::startApiTest,
-//                    onNavigateBack = {
-//                        navController.popBackStack()
-//                    }
-//                )
-//            }
-//        }
-//    }
-//}

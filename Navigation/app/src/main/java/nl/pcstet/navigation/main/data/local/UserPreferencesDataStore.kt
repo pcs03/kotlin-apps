@@ -12,7 +12,6 @@ class UserPreferencesDataStore(private val dataStore: DataStore<Preferences>) {
 
     companion object {
         val AUTH_TOKEN_KEY = stringPreferencesKey("AUTH_TOKEN")
-        val ONBOARDING_REQUIRED_KEY = booleanPreferencesKey("ONBOARDING_REQUIRED")
         val BACKEND_URI_KEY = stringPreferencesKey("BACKEND_URI")
     }
 
@@ -31,18 +30,7 @@ class UserPreferencesDataStore(private val dataStore: DataStore<Preferences>) {
             preferences.remove(AUTH_TOKEN_KEY)
         }
     }
-
-    val onboardingRequired: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[ONBOARDING_REQUIRED_KEY] ?: false
-    }
-
-    suspend fun saveOnboardingRequired(onBoardingRequired: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[ONBOARDING_REQUIRED_KEY] = onBoardingRequired
-        }
-    }
-
-    val backendUri: Flow<String?> = dataStore.data.map { preferences ->
+    val backendUrl: Flow<String?> = dataStore.data.map { preferences ->
         preferences[BACKEND_URI_KEY]
 //            ?: "https://dummyjson.com"
     }

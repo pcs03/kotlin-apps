@@ -66,7 +66,7 @@ fun OnboardingApiTestScreen(
                     style = MaterialTheme.typography.headlineSmall
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = onApiTestFinish ) {
+                Button(onClick = onApiTestFinish) {
                     Text("Go to Home")
                 }
             }
@@ -90,7 +90,9 @@ fun OnboardingApiTestScreen(
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(24.dp))
-                Button(onClick = onNavigateBack) {
+                Button(onClick = {
+                    onNavigateBack()
+                }) {
                     Text("Try Again")
                 }
             }

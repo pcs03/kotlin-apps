@@ -1,28 +1,21 @@
 package nl.pcstet.navigation.main.presentation
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import androidx.navigation.compose.rememberNavController
 import kotlinx.serialization.Serializable
+import nl.pcstet.navigation.auth.presentation.AuthRoute
 import nl.pcstet.navigation.auth.presentation.authDestination
-import nl.pcstet.navigation.auth.presentation.login.LoginScreen
-import nl.pcstet.navigation.auth.presentation.login.LoginViewModel
-import nl.pcstet.navigation.core.data.utils.AuthState
 import nl.pcstet.navigation.core.presentation.components.LoadingIndicator
-import nl.pcstet.navigation.home.presentation.HomeScreen
-import nl.pcstet.navigation.home.presentation.HomeViewModel
+import nl.pcstet.navigation.home.presentation.HomeRoute
+import nl.pcstet.navigation.home.presentation.homeDestination
 import nl.pcstet.navigation.main.presentation.utils.sharedViewModel
-import nl.pcstet.navigation.onboarding.presentation.OnboardingViewModel
-import org.koin.compose.viewmodel.koinViewModel
 
 sealed interface AppRootRoute {
     @Serializable
@@ -30,38 +23,45 @@ sealed interface AppRootRoute {
 
     @Serializable
     data object Loading : AppRootRoute
-
-    @Serializable
-    data object Login : AppRootRoute
-
-    @Serializable
-    data object Home : AppRootRoute
 }
 
 fun NavGraphBuilder.appRootDestination(
     navController: NavHostController,
+    onOnboardingRequired: () -> Unit,
 ) {
     navigation<AppRootRoute.Graph>(startDestination = AppRootRoute.Loading) {
         composable<AppRootRoute.Loading> { backStackEntry ->
             val appRootViewModel = backStackEntry.sharedViewModel<RootViewModel>(navController)
-            val authState by appRootViewModel.authState.collectAsState()
+            val mainViewModel = backStackEntry.sharedViewModel<MainViewModel>(navController)
 
-            when (authState) {
-                is AuthState.Unknown, is AuthState.Loading -> {
+            val appRootState by appRootViewModel.appRootState.collectAsState()
+
+            when (appRootState) {
+                is AppRootState.Loading -> {
                     LoadingIndicator(Modifier.fillMaxSize())
                 }
 
-                is AuthState.Authenticated -> {
-                    LaunchedEffect(authState) {
-                        navController.navigate(AppRootRoute.Home) {
+                is AppRootState.OnboardingRequired -> {
+                    LaunchedEffect(appRootState) {
+                        onOnboardingRequired()
+                    }
+                }
+
+                is AppRootState.Unauthenticated -> {
+                    LaunchedEffect(appRootState) {
+                        navController.navigate(AuthRoute.Graph) {
                             popUpTo(AppRootRoute.Graph)
                         }
                     }
                 }
 
-                is AuthState.Unauthenticated, is AuthState.InvalidToken -> {
-                    LaunchedEffect(authState) {
-                        navController.navigate(AppRootRoute.Login) {
+                is AppRootState.Authenticated -> {
+                    LaunchedEffect(appRootState) {
+                        val appRootState = appRootState as AppRootState.Authenticated
+                        mainViewModel.initializeAuthenticatedApiClientHolder(
+                            appRootState.backendUrl, appRootState.accessToken
+                        )
+                        navController.navigate(HomeRoute.Graph) {
                             popUpTo(AppRootRoute.Graph)
                         }
                     }
@@ -69,65 +69,16 @@ fun NavGraphBuilder.appRootDestination(
             }
         }
         authDestination(
-            navController = navController,
-            onAuthFinish = {
-                navController.navigate(AppRootRoute.Home) {
-                    popUpTo(Route.AuthGraph) {
-                        inclusive = true
-                    }
+            navController = navController, onAuthFinish = {
+                navController.navigate(AppRootRoute.Graph) {
+                    popUpTo(AppRootRoute.Graph)
                 }
-            }
-        )
-        composable<AppRootRoute.Home> {
-            val homeViewModel = koinViewModel<HomeViewModel>()
-            HomeScreen(viewModel = homeViewModel)
-        }
+            })
+        homeDestination(
+            navController = navController, navigateToAppRoot = {
+                navController.navigate(AppRootRoute.Graph) {
+                    popUpTo(AppRootRoute.Graph)
+                }
+            })
     }
 }
-
-
-//@Composable
-//fun RootNavigation() {
-//    val navController = rememberNavController()
-//
-//    val rootViewModel = koinViewModel<RootViewModel>()
-//    val authState by rootViewModel.authState.collectAsState()
-//
-//    when (authState) {
-//        is AuthState.Loading, is AuthState.Unknown -> {
-//            LoadingIndicator(Modifier.fillMaxSize())
-//        }
-//
-//        is AuthState.Unauthenticated, is AuthState.Authenticated, is AuthState.InvalidToken -> {
-//            val startDestination = if (authState is AuthState.Authenticated) {
-//                Route.AppRootGraph
-//            } else {
-//                Route.AuthGraph
-//            }
-//
-//            NavHost(
-//                navController = navController,
-//                startDestination = startDestination,
-//            ) {
-//                navigation<Route.AuthGraph>(
-//                    startDestination = Route.LoginScreen
-//                ) {
-//                    composable<Route.LoginScreen> {
-//                        val loginViewModel = koinViewModel<LoginViewModel>()
-//                        LoginScreen(viewModel = loginViewModel)
-//                    }
-//                }
-//
-//                navigation<Route.AppRootGraph>(
-//                    startDestination = Route.HomeScreen
-//                ) {
-//                    composable<Route.HomeScreen> {
-//                        val homeViewModel = koinViewModel<HomeViewModel>()
-//                        HomeScreen(viewModel = homeViewModel)
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//}
