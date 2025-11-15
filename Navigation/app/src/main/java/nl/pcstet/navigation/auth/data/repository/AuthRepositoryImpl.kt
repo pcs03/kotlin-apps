@@ -6,14 +6,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import nl.pcstet.navigation.auth.data.network.ApiService
+import nl.pcstet.navigation.auth.data.network.AuthApiService
 import nl.pcstet.navigation.auth.data.network.model.LoginRequestDto
 import nl.pcstet.navigation.main.data.local.UserPreferencesDataStore
 import nl.pcstet.navigation.core.data.utils.ApiResult
 import nl.pcstet.navigation.core.data.utils.AuthState
 
 class AuthRepositoryImpl(
-    private val apiService: ApiService,
+    private val authApiService: AuthApiService,
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val coroutineScope: CoroutineScope
 ) : AuthRepository {
@@ -49,7 +49,7 @@ class AuthRepositoryImpl(
         email: String,
         password: String,
     ) {
-        val result = apiService.login(
+        val result = authApiService.login(
             LoginRequestDto(
                 username = email,
                 password = password
@@ -82,7 +82,7 @@ class AuthRepositoryImpl(
     }
 
     suspend fun authenticate(token: String) {
-        val result = apiService.authenticate(accessToken = token)
+        val result = authApiService.authenticate(accessToken = token)
 
         when (result) {
             is ApiResult.Success -> {

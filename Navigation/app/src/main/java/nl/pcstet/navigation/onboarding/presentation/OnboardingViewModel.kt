@@ -164,7 +164,13 @@ class OnboardingViewModel(
         val protocol = _apiInputUiState.value.protocol
         val finalHost = _apiInputUiState.value.host.trim().removeSuffix("/")
         val finalPath = _apiInputUiState.value.path.trim()
-        return "$protocol://$finalHost/$finalPath/"
+
+        val finalUrl = "$protocol://$finalHost/$finalPath"
+
+        if (finalUrl.endsWith("/")) {
+            return finalUrl
+        }
+        return "$finalUrl/"
     }
 
 }

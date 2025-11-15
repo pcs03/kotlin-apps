@@ -19,7 +19,7 @@ import java.net.UnknownHostException
 suspend inline fun <reified T> HttpClient.safeRequest(block: HttpRequestBuilder.() -> Unit): ApiResult<T> =
     try {
         val response = request { block() }
-        ApiResult.Success(response.body())
+        ApiResult.Success(response.body<T>())
     } catch (exception: ClientRequestException) {
         ApiResult.Failure(exception.toApiException())
     } catch (exception: ServerResponseException) {
@@ -29,6 +29,12 @@ suspend inline fun <reified T> HttpClient.safeRequest(block: HttpRequestBuilder.
     } catch (throwable: Throwable) {
         ApiResult.Failure(throwable.toApiException())
     }
+
+
+//sealed interface ApiTestResult<out R> {
+//    data class Success<out T>(val data: T) : ApiTestResult<T>
+//    data class Failure(val exception: Exception) : ApiTestResult<Nothing>
+//}
 
 sealed class ApiResult<T>(open val data: T? = null, open val cause: ApiException? = null) {
     class Success<T>(override val data: T) : ApiResult<T>(data)

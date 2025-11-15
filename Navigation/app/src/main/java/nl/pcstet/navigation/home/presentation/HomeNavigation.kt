@@ -1,5 +1,7 @@
 package nl.pcstet.navigation.home.presentation
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -21,7 +23,9 @@ fun NavGraphBuilder.homeDestination(
     navigation<HomeRoute.Graph>(startDestination = HomeRoute.Main) {
         composable<HomeRoute.Main> {
             val homeViewModel = koinViewModel<HomeViewModel>()
+            val homeUiState by homeViewModel.homeUiState.collectAsState()
             HomeScreen(
+                homeUiState = homeUiState,
                 onLogout = {
                     homeViewModel.logout()
                     navigateToAppRoot()

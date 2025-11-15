@@ -12,9 +12,9 @@ import nl.pcstet.navigation.main.data.network.ApiClientHolder
 import nl.pcstet.navigation.core.data.utils.ApiResult
 import nl.pcstet.navigation.core.data.utils.safeRequest
 
-class DummyJsonApiService(
+class DummyJsonAuthApiService(
     private val apiClientHolder: ApiClientHolder
-) : ApiService {
+) : AuthApiService {
     override suspend fun login(loginRequestDto: LoginRequestDto): ApiResult<LoginResponseDto> {
         val client = apiClientHolder.getUnauthenticatedClient()
         return client.safeRequest<LoginResponseDto> {

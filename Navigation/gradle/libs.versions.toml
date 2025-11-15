@@ -20,8 +20,6 @@ koin = "4.1.1"
 devtools-ksp = "2.3.2"
 
 androidx-datastore = "1.1.7"
-protobuf = "4.33.0"
-protobuf-plugin = "0.9.5"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }

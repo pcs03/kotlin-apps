@@ -14,10 +14,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import nl.pcstet.navigation.core.presentation.components.LoadingIndicator
 
 @Composable
 fun HomeScreen(
     onLogout: () -> Unit,
+    homeUiState: HomeUiState,
 ) {
     Scaffold { innerPadding ->
         Column(
@@ -32,6 +34,13 @@ fun HomeScreen(
                 text = "Welcome!",
                 style = MaterialTheme.typography.headlineMedium
             )
+            when(homeUiState) {
+                is HomeUiState.Loading -> {
+                    LoadingIndicator()
+                }
+                is HomeUiState.Error -> {Text("Error: ${homeUiState.message}")}
+                is HomeUiState.HasUser -> {Text("Success: ${homeUiState.user}")}
+            }
             Text(
                 text = "You are successfully logged in.",
                 style = MaterialTheme.typography.bodyLarge

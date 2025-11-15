@@ -3,8 +3,8 @@ package nl.pcstet.navigation.auth.di
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import nl.pcstet.navigation.auth.data.network.ApiService
-import nl.pcstet.navigation.auth.data.network.DummyJsonApiService
+import nl.pcstet.navigation.auth.data.network.AuthApiService
+import nl.pcstet.navigation.auth.data.network.DummyJsonAuthApiService
 import nl.pcstet.navigation.auth.data.repository.AuthRepository
 import nl.pcstet.navigation.auth.data.repository.AuthRepositoryImpl
 import nl.pcstet.navigation.auth.presentation.login.LoginViewModel
@@ -17,7 +17,7 @@ import org.koin.dsl.module
 
 
 val authModule = module {
-    single<ApiService> { DummyJsonApiService(get()) }
+    single<AuthApiService> { DummyJsonAuthApiService(get()) }
 
     single<CoroutineScope> { CoroutineScope(SupervisorJob() + Dispatchers.IO) }
 
