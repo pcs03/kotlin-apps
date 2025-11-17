@@ -1,17 +1,15 @@
-package nl.pcstet.startupflow.ui.auth.feature.onboardinginput
+package nl.pcstet.startupflow.ui.auth.feature.landing
 
-import android.util.Log
 import android.util.Patterns
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.SavedStateHandle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import nl.pcstet.startupflow.data.auth.datasource.network.AuthApiService
-import nl.pcstet.startupflow.data.core.datasource.disk.SettingsDataStore
-import nl.pcstet.startupflow.data.core.datasource.network.utils.onFailure
-import nl.pcstet.startupflow.data.core.datasource.network.utils.onSuccess
+import nl.pcstet.startupflow.data.auth.repository.AuthRepository
+import nl.pcstet.startupflow.data.auth.repository.di.authRepositoryModule
+import nl.pcstet.startupflow.data.core.datasource.disk.SettingsDataSourceImpl
+import nl.pcstet.startupflow.ui.core.base.BaseViewModel
 
 data class ApiInputUiState(
     val protocol: String = "https",
@@ -22,12 +20,37 @@ data class ApiInputUiState(
     val isFormValid: Boolean = false,
 )
 
+private const val KEY_STATE = "state"
 
+data class LandingState(
+    val apiUrlInput: String,
+    val emailInput: String,
+    val continueButtonEnabled: Boolean,
+    val rememberEmailEnabled: Boolean,
 
-class OnboardingApiInputViewModel(
+    )
+
+sealed interface LandingEvent{
+    data object NavigateBack : LandingEvent
+}
+
+sealed interface LandingAction {
+    data object ContinueButtonClick : LandingAction
+    data class EmailInputChanged(val input: String) : LandingAction
+    data class ApiUrlInputChanged(val input: String) : LandingAction
+}
+
+class LandingViewModel(
     private val authApiService: AuthApiService,
-    private val settingsDataStore: SettingsDataStore,
-) : ViewModel() {
+    private val authRepository: AuthRepository,
+    private val settingsDataStore: SettingsDataSourceImpl,
+    savedStateHandle: SavedStateHandle,
+) : BaseViewModel<LandingState, LandingEvent, LandingAction>(
+    initialState = savedStateHandle[KEY_STATE]
+        ?: LandingState(
+            emailInput = authRepository.authState.value.
+        )
+) {
     private val _uiState = MutableStateFlow<ApiInputUiState>(ApiInputUiState())
     val uiState = _uiState.asStateFlow()
 

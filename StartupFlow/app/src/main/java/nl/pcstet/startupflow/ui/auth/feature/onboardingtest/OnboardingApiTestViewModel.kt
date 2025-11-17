@@ -1,20 +1,14 @@
 package nl.pcstet.startupflow.ui.auth.feature.onboardingtest
 
 import android.util.Log
-import android.util.Patterns
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import nl.pcstet.startupflow.data.auth.datasource.network.AuthApiService
-import nl.pcstet.startupflow.data.core.datasource.disk.SettingsDataStore
+import nl.pcstet.startupflow.data.core.datasource.disk.SettingsDataSourceImpl
 import nl.pcstet.startupflow.data.core.datasource.network.utils.onFailure
 import nl.pcstet.startupflow.data.core.datasource.network.utils.onSuccess
 
@@ -32,7 +26,7 @@ sealed interface ApiTestStatus {
 
 class OnboardingApiTestViewModel(
     private val authApiService: AuthApiService,
-    private val settingsDataStore: SettingsDataStore,
+    private val settingsDataStore: SettingsDataSourceImpl,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     val apiUrl = savedStateHandle.toOnboardingApiTestArgs().apiUrl

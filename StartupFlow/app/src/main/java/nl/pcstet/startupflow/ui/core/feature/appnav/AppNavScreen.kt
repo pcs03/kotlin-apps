@@ -26,8 +26,8 @@ fun AppNavScreen(
     viewModel: AppNavViewModel = koinViewModel(),
     navController: NavHostController = rememberNavController(),
 ) {
-    val authState by viewModel.authState.collectAsStateWithLifecycle()
-    val previousAuthStateReference = remember { AtomicReference(authState) }
+    val state by viewModel.stateFlow.collectAsStateWithLifecycle()
+    val previousAuthStateReference = remember { AtomicReference(state) }
 
     NavHost(
         navController = navController,
@@ -36,19 +36,20 @@ fun AppNavScreen(
         splashDestination()
     }
 
-    val targetRoute = when (authState) {
-        is AuthState.Loading -> SplashRoute
-        AuthState.OnboardingRequired -> TODO()
-        AuthState.Unauthenticated -> TODO()
-        AuthState.Authenticated -> TODO()
+    val targetRoute = when (state) {
+        is AppNavState.Splash -> SplashRoute
+        AppNavState.AppLocked -> TODO()
+        AppNavState.AppUnlocked -> TODO()
+        AppNavState.Auth -> TODO()
+        AppNavState.AuthWithWelcome -> TODO()
     }
     val currentRoute = navController.currentDestination?.rootLevelRoute()
 
-    if (currentRoute == targetRoute.toObjectNavigationRoute() && previousAuthStateReference.get() == authState) {
-        previousAuthStateReference.set(authState)
+    if (currentRoute == targetRoute.toObjectNavigationRoute() && previousAuthStateReference.get() == state) {
+        previousAuthStateReference.set(state)
         return
     }
-    previousAuthStateReference.set(authState)
+    previousAuthStateReference.set(state)
 
     val rootNavOptions = navOptions {
         popUpTo(navController.graph.id) {
@@ -56,27 +57,10 @@ fun AppNavScreen(
         }
     }
 
-    LaunchedEffect(authState) {
-        when (val currentState = authState) {
-            is AuthState.Authenticated -> {
-                navController.navigateToMain() {
-                    popUpTo(navController.graph.id) { inclusive = true }
-                }
-            }
-
-            is AuthState.Unauthenticated -> {
-                navController.navigateToAuth() {
-                    popUpTo(navController.graph.id) { inclusive = true }
-                }
-            }
-
-            is AuthState.OnboardingRequired -> {
-                navController.navigateToOnboarding() {
-                    popUpTo(navController.graph.id) { inclusive = true }
-                }
-            }
-
-            is AuthState.Loading -> navController.navigateToSplash(rootNavOptions)
+    LaunchedEffect(state) {
+        when (val currentState = state) {
+            is AppNavState.Splash -> navController.navigateToSplash(rootNavOptions)
+//            is AppNavState.Auth -> navController.navigateTO
         }
     }
 }

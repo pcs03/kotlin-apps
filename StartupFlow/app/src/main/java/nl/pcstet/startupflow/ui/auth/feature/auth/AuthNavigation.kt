@@ -12,10 +12,10 @@ import androidx.navigation.navigation
 import kotlinx.serialization.Serializable
 import nl.pcstet.startupflow.core.presentation.navigation.AppGraph
 import nl.pcstet.startupflow.core.presentation.utils.sharedViewModel
-import nl.pcstet.startupflow.ui.auth.feature.onboardinginput.OnboardingApiInputScreen
-import nl.pcstet.startupflow.ui.auth.feature.onboardinginput.OnboardingViewModel
+import nl.pcstet.startupflow.ui.auth.feature.landing.OnboardingApiInputScreen
+import nl.pcstet.startupflow.ui.auth.feature.landing.OnboardingViewModel
 import nl.pcstet.startupflow.ui.auth.feature.onboardingtest.OnboardingApiTestScreen
-import nl.pcstet.startupflow.ui.auth.feature.startonboarding.OnboardingStartScreen
+import nl.pcstet.startupflow.ui.auth.feature.welcome.WelcomeScreen
 
 @Serializable
 data object AuthGraphRoute
@@ -52,8 +52,8 @@ fun NavGraphBuilder.onboardingDestination(
         startDestination = OnboardingRoute.Welcome
     ) {
         composable<OnboardingRoute.Welcome> {
-            OnboardingStartScreen(
-                onNavigateToApiInput = onNavigateToOnboardingInput
+            WelcomeScreen(
+                onNavigateToLogin = onNavigateToOnboardingInput
             )
         }
         composable<OnboardingRoute.ApiInput> { backStackEntry ->

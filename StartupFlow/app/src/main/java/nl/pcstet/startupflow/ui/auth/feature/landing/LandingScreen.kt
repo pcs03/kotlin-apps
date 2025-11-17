@@ -1,4 +1,4 @@
-package nl.pcstet.startupflow.ui.auth.feature.onboardinginput
+package nl.pcstet.startupflow.ui.auth.feature.landing
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,7 +27,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun OnboardingApiInputScreen(
     onNextClicked: () -> Unit,
-    viewModel: OnboardingApiInputViewModel = koinViewModel(),
+    viewModel: LandingViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 

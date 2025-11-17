@@ -9,6 +9,6 @@ data object AppNavigationRoute
 
 fun NavGraphBuilder.appNavDestination() {
     composable<AppNavigationRoute> {
-//        AppNav
+        AppNavScreen()
     }
 }

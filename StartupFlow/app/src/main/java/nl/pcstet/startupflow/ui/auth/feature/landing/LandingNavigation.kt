@@ -1,4 +1,4 @@
-package nl.pcstet.startupflow.ui.auth.feature.onboardinginput
+package nl.pcstet.startupflow.ui.auth.feature.landing
 
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
