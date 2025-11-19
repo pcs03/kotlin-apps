@@ -1,5 +1,9 @@
 package nl.pcstet.startupflow.ui.core.feature.appnav
 
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import nl.pcstet.startupflow.data.auth.repository.AuthRepository
 import nl.pcstet.startupflow.data.auth.repository.model.AuthState
@@ -7,63 +11,45 @@ import nl.pcstet.startupflow.ui.core.base.BaseViewModel
 
 class AppNavViewModel(
     private val authRepository: AuthRepository,
-): BaseViewModel<AppNavState, Unit, AppNavAction>(
+) : BaseViewModel<AppNavState, Unit, AppNavAction>(
     initialState = AppNavState.Splash
 ) {
+    init {
+        combine(
+            authRepository.authState,
+            authRepository.showWelcomeScreen,
+        ) { authState, showWelcomeScreen ->
+            AppNavAction.Internal.AppStateUpdateReceive( authState, showWelcomeScreen)
+        }
+            .onEach(::handleAction)
+            .launchIn(viewModelScope)
+    }
+
     override fun handleAction(action: AppNavAction) {
-        when(action) {
-            is AppNavAction.AppStateUpdateReceive -> handleAppStateUpdateReceive(action)
+        when (action) {
+            is AppNavAction.Internal.AppStateUpdateReceive -> handleAppStateUpdateReceive(action)
         }
     }
 
     private fun handleAppStateUpdateReceive(
-        action: AppNavAction.AppStateUpdateReceive
+        action: AppNavAction.Internal.AppStateUpdateReceive,
     ) {
         val authState = action.authState
-        val updatedAppNavState = when(authState) {
+        val updatedAppNavState = when (authState) {
             is AuthState.Loading -> AppNavState.Splash
-            is AuthState.Unauthenticated -> AppNavState.Auth
-            is AuthState.Locked -> AppNavState.AppLocked
-            is AuthState.Unlocked -> AppNavState.AppUnlocked
+            is AuthState.Authenticated -> AppNavState.AppUnlocked
+            is AuthState.Unauthenticated -> {
+                when(action.showWelcomeScreen) {
+                    true -> AppNavState.AuthWithWelcome
+                    false -> AppNavState.Auth
+                }
+            }
         }
 
         mutableStateFlow.update { updatedAppNavState }
     }
 }
 
-
-
-//class AppNavViewModel(
-//    private val authRepository: AuthRepository
-//) : ViewModel() {
-//    private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
-//    val authState = _authState.asStateFlow()
-//
-//    init {
-//        checkAuth()
-//    }
-//
-//    fun checkAuth() {
-//        viewModelScope.launch {
-//            _authState.value = authRepository.getAuthState()
-//        }
-//    }
-//
-//    fun onOnboardingComplete() {
-//        checkAuth()
-//    }
-//
-//    fun onLoginSuccess() {
-//        _authState.value = AuthState.Authenticated
-//    }
-//
-//    fun onSessionExpired() {
-//        viewModelScope.launch {
-//            authRepository.clearAccessToken()
-//            _authState.value = AuthState.Unauthenticated
-//        }
-//    }
-//}
 
 sealed interface AppNavState {
 
@@ -84,7 +70,11 @@ sealed interface AppNavState {
 }
 
 sealed interface AppNavAction {
-    data class AppStateUpdateReceive(
-        val authState: AuthState
-    ) : AppNavAction
+    sealed interface Internal {
+        data class AppStateUpdateReceive(
+            val authState: AuthState,
+            val showWelcomeScreen: Boolean,
+        ) : AppNavAction
+
+    }
 }

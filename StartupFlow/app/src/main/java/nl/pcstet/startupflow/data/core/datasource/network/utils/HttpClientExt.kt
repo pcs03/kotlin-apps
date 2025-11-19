@@ -1,9 +1,11 @@
 package nl.pcstet.startupflow.data.core.datasource.network.utils
 
+import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.request
+import java.net.UnknownHostException
 
 suspend inline fun <reified T> HttpClient.safeRequest(block: HttpRequestBuilder.() -> Unit): ApiResult<T> {
     return try {

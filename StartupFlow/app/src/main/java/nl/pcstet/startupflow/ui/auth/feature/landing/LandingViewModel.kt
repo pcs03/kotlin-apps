@@ -1,166 +1,225 @@
 package nl.pcstet.startupflow.ui.auth.feature.landing
 
 import android.util.Patterns
-import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import nl.pcstet.startupflow.data.auth.datasource.network.AuthApiService
+import kotlinx.coroutines.launch
 import nl.pcstet.startupflow.data.auth.repository.AuthRepository
-import nl.pcstet.startupflow.data.auth.repository.di.authRepositoryModule
-import nl.pcstet.startupflow.data.core.datasource.disk.SettingsDataSourceImpl
+import nl.pcstet.startupflow.data.auth.repository.model.ApiTestResult
 import nl.pcstet.startupflow.ui.core.base.BaseViewModel
+import nl.pcstet.startupflow.ui.core.model.InputValidationState
 
-data class ApiInputUiState(
-    val protocol: String = "https",
-    val host: String = "",
-    val path: String = "",
-    val hostError: String? = null,
-    val pathError: String? = null,
-    val isFormValid: Boolean = false,
-)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+class LandingViewModel(
+    private val authRepository: AuthRepository,
+) : BaseViewModel<LandingState, LandingEvent, LandingAction>(
+    initialState = LandingState.Loading
+) {
+    init {
+        initializeState()
+        watchApiUrlInputForValidation()
+    }
 
-private const val KEY_STATE = "state"
+    private fun initializeState() {
+        viewModelScope.launch {
+            val storedApiUrl = authRepository.apiUrl.firstOrNull() ?: ""
+            val storedEmail = authRepository.rememberedEmail.firstOrNull() ?: ""
 
-data class LandingState(
-    val apiUrlInput: String,
-    val emailInput: String,
-    val continueButtonEnabled: Boolean,
-    val rememberEmailEnabled: Boolean,
+            val initialState = LandingState.Content(
+                apiUrlInput = storedApiUrl,
+                apiUrlValidation = if (storedApiUrl.isNotEmpty()) InputValidationState.Valid else InputValidationState.Idle,
+                emailInput = storedEmail,
+                emailValidation = if (storedEmail.isNotEmpty()) InputValidationState.Valid else InputValidationState.Idle,
+                rememberEmailEnabled = storedEmail.isNotEmpty()
+            )
 
-    )
+            mutableStateFlow.update { initialState }
+        }
+    }
 
-sealed interface LandingEvent{
-    data object NavigateBack : LandingEvent
+    private fun watchApiUrlInputForValidation() {
+        mutableStateFlow
+            .map { (it as? LandingState.Content)?.apiUrlInput }
+            .filterNotNull()
+            .distinctUntilChanged()
+            .flatMapLatest { input ->
+                when (val patternValidation = validateApiUrlByPattern(input)) {
+                    is InputValidationState.Valid -> flow {
+                        emit(InputValidationState.Loading)
+                        delay(1000L)
+                        emitAll(validateApiUrlByNetworkCall(input))
+                    }
+
+                    else -> flowOf(patternValidation)
+                }
+            }
+            .onEach { result ->
+                mutableStateFlow.updateIfContent { currentState ->
+                    currentState.copy(apiUrlValidation = result)
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    // Action handling
+
+    override fun handleAction(action: LandingAction) {
+        when (action) {
+            is LandingAction.ApiUrlInputChanged -> handleApiUrlInputChanged(action)
+            is LandingAction.EmailInputChanged -> handleEmailInputChanged(action)
+            is LandingAction.ContinueButtonClick -> handleContinueButtonClicked()
+            is LandingAction.RememberEmailSwitchClicked -> handleRememberEmailSwitchClicked(action)
+
+            is LandingAction.Internal.ApiUrlValidationChanged -> handleApiUrlValidationChanged(
+                action
+            )
+        }
+    }
+
+    private fun handleApiUrlInputChanged(action: LandingAction.ApiUrlInputChanged) {
+        mutableStateFlow.updateIfContent { currentState ->
+            currentState.copy(apiUrlInput = action.input)
+        }
+    }
+
+    private fun handleEmailInputChanged(action: LandingAction.EmailInputChanged) {
+        val currentState = state
+        val emailValidation = validateEmailByPattern(action.input)
+        if (currentState is LandingState.Content) {
+            mutableStateFlow.update {
+                currentState.copy(
+                    emailInput = action.input,
+                    emailValidation = emailValidation,
+                )
+            }
+        }
+    }
+
+    private fun handleApiUrlValidationChanged(action: LandingAction.Internal.ApiUrlValidationChanged) {
+        mutableStateFlow.updateIfContent { currentState ->
+            currentState.copy(apiUrlValidation = action.input)
+        }
+    }
+
+    private fun handleRememberEmailSwitchClicked(action: LandingAction.RememberEmailSwitchClicked) {
+        mutableStateFlow.update { currentState ->
+            if (currentState !is LandingState.Content) return@update currentState
+            currentState.copy(rememberEmailEnabled = action.input)
+        }
+        val currentState = state
+        if (currentState is LandingState.Content) {
+            mutableStateFlow.update { currentState.copy(rememberEmailEnabled = action.input) }
+        }
+    }
+
+    private fun handleContinueButtonClicked() {
+        val currentState = state
+        if (currentState is LandingState.Content) {
+            if (currentState.apiUrlValidation !is InputValidationState.Valid || currentState.emailValidation !is InputValidationState.Valid) return
+
+            if (!currentState.continueButtonEnabled) {
+                return
+            }
+
+            viewModelScope.launch {
+                authRepository.setLandingScreenValues(
+                    apiUrl = currentState.apiUrlInput,
+                    email = currentState.emailInput,
+                    rememberEmail = currentState.rememberEmailEnabled
+                )
+                sendEvent(LandingEvent.NavigateToLogin(currentState.emailInput))
+            }
+
+        }
+    }
+
+
+    // Private helper functions
+
+    private suspend fun validateApiUrlByNetworkCall(apiUrl: String): Flow<InputValidationState> {
+        return authRepository.testApiUrlValid(apiUrl).map { apiTestResult ->
+            when (apiTestResult) {
+                is ApiTestResult.Loading -> InputValidationState.Loading
+                is ApiTestResult.Success -> InputValidationState.Valid
+                is ApiTestResult.Failure -> InputValidationState.Invalid(apiTestResult.message)
+            }
+        }
+    }
+
+    private fun validateApiUrlByPattern(apiUrl: String): InputValidationState {
+        if (apiUrl.isBlank()) return InputValidationState.Idle
+        val validUrl = Patterns.WEB_URL.matcher(apiUrl).matches()
+        return when (validUrl) {
+            true -> InputValidationState.Valid
+            false -> InputValidationState.Invalid("The specified API URL is invalid.")
+        }
+    }
+
+    private fun validateEmailByPattern(email: String): InputValidationState {
+        if (email.isBlank()) return InputValidationState.Idle
+        val validEmail = Patterns.EMAIL_ADDRESS.matcher(email).matches()
+        return when (validEmail) {
+            true -> InputValidationState.Valid
+            false -> InputValidationState.Invalid("The specified email is invalid.")
+        }
+    }
+}
+
+sealed interface LandingState {
+    data object Loading : LandingState
+    data class Content(
+        val apiUrlInput: String = "",
+        val apiUrlValidation: InputValidationState = InputValidationState.Idle,
+        val emailInput: String = "",
+        val emailValidation: InputValidationState = InputValidationState.Idle,
+        val rememberEmailEnabled: Boolean = false,
+    ) : LandingState {
+        val continueButtonEnabled: Boolean
+            get() = apiUrlValidation is InputValidationState.Valid && emailValidation is InputValidationState.Valid
+    }
+}
+
+sealed interface LandingEvent {
+    data class NavigateToLogin(val email: String) : LandingEvent
 }
 
 sealed interface LandingAction {
     data object ContinueButtonClick : LandingAction
-    data class EmailInputChanged(val input: String) : LandingAction
     data class ApiUrlInputChanged(val input: String) : LandingAction
+    data class EmailInputChanged(val input: String) : LandingAction
+    data class RememberEmailSwitchClicked(val input: Boolean) : LandingAction
+
+    sealed interface Internal : LandingAction {
+        data class ApiUrlValidationChanged(val input: InputValidationState) : LandingAction
+    }
 }
 
-class LandingViewModel(
-    private val authApiService: AuthApiService,
-    private val authRepository: AuthRepository,
-    private val settingsDataStore: SettingsDataSourceImpl,
-    savedStateHandle: SavedStateHandle,
-) : BaseViewModel<LandingState, LandingEvent, LandingAction>(
-    initialState = savedStateHandle[KEY_STATE]
-        ?: LandingState(
-            emailInput = authRepository.authState.value.
-        )
+private inline fun MutableStateFlow<LandingState>.updateIfContent(
+    update: (LandingState.Content) -> LandingState,
 ) {
-    private val _uiState = MutableStateFlow<ApiInputUiState>(ApiInputUiState())
-    val uiState = _uiState.asStateFlow()
-
-    fun changeApiProtocol(scheme: String) {
-        val isFormValid = validateForm()
-        _uiState.update { it.copy(protocol = scheme, isFormValid = isFormValid) }
-    }
-
-    fun changeApiHost(host: String) {
-        val hostError = validateHost(host)
-        val isFormValid = validateForm()
-        _uiState.update {
-            it.copy(
-                host = host,
-                hostError = hostError,
-                isFormValid = isFormValid
-            )
-        }
-    }
-
-    fun changeApiPath(path: String) {
-        val pathError = validatePath(path)
-        val isFormValid = validateForm()
-        _uiState.update {
-            it.copy(
-                path = path,
-                pathError = pathError,
-                isFormValid = isFormValid
-            )
-        }
-    }
-
-    private fun validateHost(host: String): String? {
-        if (host.isBlank()) {
-            return null
-        }
-
-        if (host.any { it.isWhitespace() }) {
-            return "Host cannot contain spaces."
-        }
-
-        if (host.startsWith(".") || host.endsWith(".")) {
-            return "Host cannot start or end with '.'"
-        }
-
-        if (host.startsWith("-") || host.endsWith("-")) {
-            return "Host cannot start or end with '-'"
-        }
-
-        if (host.contains("..")) {
-            return "Host cannot contain '..'"
-        }
-
-        if (!Patterns.DOMAIN_NAME.matcher(host).matches()) {
-            return "Host is invalid."
-        }
-
-        return null
-    }
-
-    private fun validatePath(path: String): String? {
-        // The TextField start with a '/'
-        if (path.startsWith("/")) {
-            return "Path cannot contain '//'"
-        }
-
-        if (path.length > 1 && path.contains("//")) {
-            return "Path cannot contain '//'"
-        }
-
-        if (path.endsWith("/")) {
-            return "Path cannot end with '/'"
-        }
-
-        if (path.any { it.isWhitespace() }) {
-            return "Path cannot contain whitespace"
-        }
-
-        if (path.contains("?") || path.contains("#")) {
-            return "Path cannot contain '?' or '#"
-        }
-
-        val invalidPathCharRegex = Regex("[^a-zA-Z0-9-._~:!$&'()*+,;=/@/]")
-        if (invalidPathCharRegex.containsMatchIn(path)) {
-            return "Path contains invalid characters."
-        }
-
-        return null
-    }
-
-    private fun validateForm(): Boolean {
-        val host = _uiState.value.host
-        val hostError = _uiState.value.hostError
-        val pathError = _uiState.value.pathError
-
-        val hostIsValid = host.isNotBlank() && hostError == null
-        val pathIsValid = pathError == null
-
-        return hostIsValid && pathIsValid
-    }
-
-    private fun constructUrl(protocol: String, host: String, path: String): String {
-        val finalHost = host.trim().removeSuffix("/")
-        val finalPath = path.trim()
-
-        return if (finalPath.isBlank()) {
-            "$protocol://$finalHost"
+    this.update { currentState ->
+        if (currentState is LandingState.Content) {
+            update(currentState)
         } else {
-            "$protocol://$finalHost/$finalPath"
+            currentState
         }
     }
-
 }

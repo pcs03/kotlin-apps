@@ -1,5 +1,6 @@
 package nl.pcstet.startupflow.ui.core.feature.appnav
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -10,10 +11,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
-import nl.pcstet.startupflow.data.auth.repository.model.AuthState
-import nl.pcstet.startupflow.core.presentation.navigation.navigateToAuth
-import nl.pcstet.startupflow.core.presentation.navigation.navigateToMain
-import nl.pcstet.startupflow.core.presentation.navigation.navigateToOnboarding
+import nl.pcstet.startupflow.ui.auth.feature.auth.AuthGraphRoute
+import nl.pcstet.startupflow.ui.auth.feature.auth.authGraphDestination
+import nl.pcstet.startupflow.ui.auth.feature.auth.navigateToAuthGraph
+import nl.pcstet.startupflow.ui.auth.feature.welcome.navigateToWelcome
 import nl.pcstet.startupflow.ui.core.feature.splash.SplashRoute
 import nl.pcstet.startupflow.ui.core.feature.splash.navigateToSplash
 import nl.pcstet.startupflow.ui.core.feature.splash.splashDestination
@@ -29,19 +30,21 @@ fun AppNavScreen(
     val state by viewModel.stateFlow.collectAsStateWithLifecycle()
     val previousAuthStateReference = remember { AtomicReference(state) }
 
+    Log.d("AppNavScreen", state.toString())
+
     NavHost(
         navController = navController,
         startDestination = SplashRoute,
     ) {
         splashDestination()
+        authGraphDestination(navController)
     }
 
     val targetRoute = when (state) {
         is AppNavState.Splash -> SplashRoute
-        AppNavState.AppLocked -> TODO()
-        AppNavState.AppUnlocked -> TODO()
-        AppNavState.Auth -> TODO()
-        AppNavState.AuthWithWelcome -> TODO()
+        is AppNavState.AppLocked -> SplashRoute // TODO
+        is AppNavState.AppUnlocked -> SplashRoute // TODO
+        is AppNavState.Auth, is AppNavState.AuthWithWelcome -> AuthGraphRoute
     }
     val currentRoute = navController.currentDestination?.rootLevelRoute()
 
@@ -58,9 +61,13 @@ fun AppNavScreen(
     }
 
     LaunchedEffect(state) {
+        Log.d("AppNavScreen", state.toString())
         when (val currentState = state) {
             is AppNavState.Splash -> navController.navigateToSplash(rootNavOptions)
-//            is AppNavState.Auth -> navController.navigateTO
+            is AppNavState.Auth -> navController.navigateToAuthGraph(rootNavOptions)
+            is AppNavState.AuthWithWelcome -> navController.navigateToWelcome(rootNavOptions)
+            is AppNavState.AppLocked -> {}
+            is AppNavState.AppUnlocked -> {}
         }
     }
 }

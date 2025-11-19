@@ -25,29 +25,16 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun WelcomeScreen(
-    onNavigateToLogin: () -> Unit,
-    viewModel: WelcomeViewModel = koinViewModel(),
+    onLoginClick: () -> Unit,
 ) {
-    EventsEffect(viewModel = viewModel) { event ->
-        when(event) {
-            is WelcomeEvent.NavigateToLogin -> onNavigateToLogin()
-        }
-    }
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
     ) { innerPadding ->
         WelcomeScreenContent(
-            onLoginClick = remember(viewModel) {
-                { viewModel.trySendAction(WelcomeAction.LoginClick) }
-            },
-            modifier = Modifier.padding(innerPadding)
+            onLoginClick = onLoginClick,
+            modifier = Modifier.fillMaxSize().padding(innerPadding)
         )
     }
-
-
-
-    Log.d("OnboardingWelcomeScreen", "Instantiation")
 }
 
 @Composable

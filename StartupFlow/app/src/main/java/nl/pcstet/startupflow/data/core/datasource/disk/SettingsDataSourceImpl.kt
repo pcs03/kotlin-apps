@@ -15,7 +15,6 @@ class SettingsDataSourceImpl(
     companion object {
         private val HAS_USER_LOGGED_IN_OR_CREATED_ACCOUNT_KEY =
             booleanPreferencesKey("HAS_USER_LOGGED_IN_OR_CREATED_ACCOUNT")
-        private val IS_ONBOARDING_COMPLETE_KEY = booleanPreferencesKey("IS_ONBOARDING_COMPLETE")
         private val EMAIL_ADDRESS_KEY = stringPreferencesKey("EMAIL_ADDRESS")
         private val ACCESS_TOKEN_KEY = stringPreferencesKey("ACCESS_TOKEN")
         private val API_URL_KEY = stringPreferencesKey("API_URL")
@@ -25,10 +24,6 @@ class SettingsDataSourceImpl(
         dataStore.data.map { preferences ->
             preferences[HAS_USER_LOGGED_IN_OR_CREATED_ACCOUNT_KEY] ?: false
         }
-
-    override val isOnboardingComplete: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[IS_ONBOARDING_COMPLETE_KEY] ?: false
-    }
 
     override val emailAddress: Flow<String?> = dataStore.data.map { preferences ->
         preferences[EMAIL_ADDRESS_KEY]
@@ -51,18 +46,6 @@ class SettingsDataSourceImpl(
     override suspend fun clearUserLoggedInOrCreatedAccount() {
         dataStore.edit { preferences ->
             preferences.remove(HAS_USER_LOGGED_IN_OR_CREATED_ACCOUNT_KEY)
-        }
-    }
-
-    override suspend fun setOnboardingComplete(value: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[IS_ONBOARDING_COMPLETE_KEY] = value
-        }
-    }
-
-    override suspend fun clearOnboardingComplete() {
-        dataStore.edit { preferences ->
-            preferences.remove(IS_ONBOARDING_COMPLETE_KEY)
         }
     }
 

@@ -4,6 +4,7 @@ import android.app.Application
 import nl.pcstet.startupflow.data.auth.datasource.di.authDataSourceModule
 import nl.pcstet.startupflow.data.auth.repository.di.authRepositoryModule
 import nl.pcstet.startupflow.data.core.datasource.di.coreDataSourceModule
+import nl.pcstet.startupflow.data.core.manager.di.coreManagerModule
 import nl.pcstet.startupflow.ui.auth.di.authUiModule
 import nl.pcstet.startupflow.ui.core.di.coreUiModule
 import org.koin.android.ext.koin.androidContext
@@ -18,7 +19,7 @@ class StartupFlowApp : Application() {
             modules(
                 coreDataSourceModule,
                 coreUiModule,
-
+                coreManagerModule,
                 authDataSourceModule,
                 authRepositoryModule,
                 authUiModule,
