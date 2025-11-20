@@ -8,23 +8,19 @@ import nl.pcstet.startupflow.data.auth.repository.model.LoginCredentials
 import nl.pcstet.startupflow.data.utils.DataState
 
 interface AuthRepository {
+    // TODO: This should return Flow of Authenticated or Unauthenticated
     val authState: StateFlow<AuthState>
 
     val apiUrl: Flow<String?>
     val rememberedEmail: Flow<String?>
     val showWelcomeScreen: Flow<Boolean>
 
-    suspend fun setLandingScreenValues(
-        apiUrl: String,
-        email: String,
-        rememberEmail: Boolean
-    )
-
-    suspend fun setRememberedEmail(email: String)
-
+    // TODO: Flow of result
     suspend fun checkAccessTokenValid(): DataState<Any>
-
+    // TODO: FLow of Result
     suspend fun testApiUrlValid(apiUrl: String): Flow<ApiTestResult>
+    // TODO: Flow of result
     suspend fun login(apiUrl: String, credentials: LoginCredentials, rememberMe: Boolean): DataState<String>
+    // TODO: Flow of result
     suspend fun logout()
 }

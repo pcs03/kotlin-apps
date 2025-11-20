@@ -62,21 +62,6 @@ class AuthRepositoryImpl(
     override val showWelcomeScreen: Flow<Boolean> =
         settingsDataSource.hasUserLoggedInOrCreatedAccount.map { !it }
 
-    override suspend fun setRememberedEmail(email: String) {
-        settingsDataSource.setEmailAddress(email)
-    }
-
-    override suspend fun setLandingScreenValues(
-        apiUrl: String,
-        email: String,
-        rememberEmail: Boolean
-    ) {
-        if (rememberEmail) {
-            settingsDataSource.setEmailAddress(email)
-        }
-        settingsDataSource.setApiUrl(apiUrl)
-    }
-
     override suspend fun checkAccessTokenValid(): DataState<Any> {
         val apiUrl =
             settingsDataSource.apiUrl.first() ?: throw IllegalStateException("API URL not found.")
