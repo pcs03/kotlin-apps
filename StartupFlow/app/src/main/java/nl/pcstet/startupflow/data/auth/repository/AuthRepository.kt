@@ -25,6 +25,6 @@ interface AuthRepository {
     suspend fun checkAccessTokenValid(): DataState<Any>
 
     suspend fun testApiUrlValid(apiUrl: String): Flow<ApiTestResult>
-    suspend fun login(credentials: LoginCredentials): DataState<Any>
+    suspend fun login(apiUrl: String, credentials: LoginCredentials, rememberMe: Boolean): DataState<String>
     suspend fun logout()
 }

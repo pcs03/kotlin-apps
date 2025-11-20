@@ -27,7 +27,7 @@ fun NavGraphBuilder.authGraphDestination(
         startDestination = LandingRoute
     ) {
         landingDestination(
-            onNavigateToLogin = {},
+//            onNavigateToLogin = {},
 //            onNavigateToLogin = { email ->
 //                navController.navigateToLogin(
 //                    email = email

@@ -24,6 +24,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import nl.pcstet.startupflow.data.auth.repository.AuthRepository
 import nl.pcstet.startupflow.data.auth.repository.model.ApiTestResult
+import nl.pcstet.startupflow.data.auth.repository.model.LoginCredentials
+import nl.pcstet.startupflow.data.utils.onFailure
 import nl.pcstet.startupflow.ui.core.base.BaseViewModel
 import nl.pcstet.startupflow.ui.core.model.InputValidationState
 
@@ -85,6 +87,7 @@ class LandingViewModel(
         when (action) {
             is LandingAction.ApiUrlInputChanged -> handleApiUrlInputChanged(action)
             is LandingAction.EmailInputChanged -> handleEmailInputChanged(action)
+            is LandingAction.PasswordInputChanged -> handlePasswordInputChanged(action)
             is LandingAction.ContinueButtonClick -> handleContinueButtonClicked()
             is LandingAction.RememberEmailSwitchClicked -> handleRememberEmailSwitchClicked(action)
 
@@ -101,15 +104,18 @@ class LandingViewModel(
     }
 
     private fun handleEmailInputChanged(action: LandingAction.EmailInputChanged) {
-        val currentState = state
-        val emailValidation = validateEmailByPattern(action.input)
-        if (currentState is LandingState.Content) {
-            mutableStateFlow.update {
-                currentState.copy(
-                    emailInput = action.input,
-                    emailValidation = emailValidation,
-                )
-            }
+        mutableStateFlow.updateIfContent { currentState ->
+            val emailValidation = validateEmailByPattern(action.input)
+            currentState.copy(
+                emailInput = action.input,
+                emailValidation = emailValidation
+            )
+        }
+    }
+
+    private fun handlePasswordInputChanged(action: LandingAction.PasswordInputChanged) {
+        mutableStateFlow.updateIfContent { currentState ->
+            currentState.copy(passwordInput = action.input)
         }
     }
 
@@ -120,37 +126,34 @@ class LandingViewModel(
     }
 
     private fun handleRememberEmailSwitchClicked(action: LandingAction.RememberEmailSwitchClicked) {
-        mutableStateFlow.update { currentState ->
-            if (currentState !is LandingState.Content) return@update currentState
+        mutableStateFlow.updateIfContent { currentState ->
             currentState.copy(rememberEmailEnabled = action.input)
-        }
-        val currentState = state
-        if (currentState is LandingState.Content) {
-            mutableStateFlow.update { currentState.copy(rememberEmailEnabled = action.input) }
         }
     }
 
     private fun handleContinueButtonClicked() {
         val currentState = state
         if (currentState is LandingState.Content) {
-            if (currentState.apiUrlValidation !is InputValidationState.Valid || currentState.emailValidation !is InputValidationState.Valid) return
-
             if (!currentState.continueButtonEnabled) {
                 return
             }
 
             viewModelScope.launch {
-                authRepository.setLandingScreenValues(
+                val loginResult = authRepository.login(
                     apiUrl = currentState.apiUrlInput,
-                    email = currentState.emailInput,
-                    rememberEmail = currentState.rememberEmailEnabled
+                    credentials = LoginCredentials(
+                        email = currentState.emailInput,
+                        password = currentState.passwordInput,
+                    ),
+                    rememberMe = currentState.rememberEmailEnabled,
                 )
-                sendEvent(LandingEvent.NavigateToLogin(currentState.emailInput))
+                loginResult.onFailure {
+                    sendEvent(LandingEvent.LoginError("Login failed! Please check your inputs."))
+                }
             }
 
         }
     }
-
 
     // Private helper functions
 
@@ -175,6 +178,7 @@ class LandingViewModel(
 
     private fun validateEmailByPattern(email: String): InputValidationState {
         if (email.isBlank()) return InputValidationState.Idle
+        return InputValidationState.Valid
         val validEmail = Patterns.EMAIL_ADDRESS.matcher(email).matches()
         return when (validEmail) {
             true -> InputValidationState.Valid
@@ -190,6 +194,8 @@ sealed interface LandingState {
         val apiUrlValidation: InputValidationState = InputValidationState.Idle,
         val emailInput: String = "",
         val emailValidation: InputValidationState = InputValidationState.Idle,
+        val passwordInput: String = "",
+        val passwordValidation: InputValidationState = InputValidationState.Idle,
         val rememberEmailEnabled: Boolean = false,
     ) : LandingState {
         val continueButtonEnabled: Boolean
@@ -198,13 +204,15 @@ sealed interface LandingState {
 }
 
 sealed interface LandingEvent {
-    data class NavigateToLogin(val email: String) : LandingEvent
+//    data class NavigateToLogin(val email: String) : LandingEvent
+    data class LoginError(val message: String) : LandingEvent
 }
 
 sealed interface LandingAction {
     data object ContinueButtonClick : LandingAction
     data class ApiUrlInputChanged(val input: String) : LandingAction
     data class EmailInputChanged(val input: String) : LandingAction
+    data class PasswordInputChanged(val input: String) : LandingAction
     data class RememberEmailSwitchClicked(val input: Boolean) : LandingAction
 
     sealed interface Internal : LandingAction {

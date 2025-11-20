@@ -15,6 +15,9 @@ import nl.pcstet.startupflow.ui.auth.feature.auth.AuthGraphRoute
 import nl.pcstet.startupflow.ui.auth.feature.auth.authGraphDestination
 import nl.pcstet.startupflow.ui.auth.feature.auth.navigateToAuthGraph
 import nl.pcstet.startupflow.ui.auth.feature.welcome.navigateToWelcome
+import nl.pcstet.startupflow.ui.main.feature.main.MainGraphRoute
+import nl.pcstet.startupflow.ui.main.feature.main.mainDestination
+import nl.pcstet.startupflow.ui.main.feature.main.navigateToMainGraph
 import nl.pcstet.startupflow.ui.core.feature.splash.SplashRoute
 import nl.pcstet.startupflow.ui.core.feature.splash.navigateToSplash
 import nl.pcstet.startupflow.ui.core.feature.splash.splashDestination
@@ -38,12 +41,12 @@ fun AppNavScreen(
     ) {
         splashDestination()
         authGraphDestination(navController)
+        mainDestination(navController)
     }
 
     val targetRoute = when (state) {
         is AppNavState.Splash -> SplashRoute
-        is AppNavState.AppLocked -> SplashRoute // TODO
-        is AppNavState.AppUnlocked -> SplashRoute // TODO
+        is AppNavState.LoggedIn -> MainGraphRoute
         is AppNavState.Auth, is AppNavState.AuthWithWelcome -> AuthGraphRoute
     }
     val currentRoute = navController.currentDestination?.rootLevelRoute()
@@ -66,8 +69,7 @@ fun AppNavScreen(
             is AppNavState.Splash -> navController.navigateToSplash(rootNavOptions)
             is AppNavState.Auth -> navController.navigateToAuthGraph(rootNavOptions)
             is AppNavState.AuthWithWelcome -> navController.navigateToWelcome(rootNavOptions)
-            is AppNavState.AppLocked -> {}
-            is AppNavState.AppUnlocked -> {}
+            is AppNavState.LoggedIn -> { navController.navigateToMainGraph(rootNavOptions) }
         }
     }
 }

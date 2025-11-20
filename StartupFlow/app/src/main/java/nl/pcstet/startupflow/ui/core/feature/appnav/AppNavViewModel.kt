@@ -1,7 +1,10 @@
 package nl.pcstet.startupflow.ui.core.feature.appnav
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
+import io.ktor.util.valuesOf
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -19,8 +22,12 @@ class AppNavViewModel(
             authRepository.authState,
             authRepository.showWelcomeScreen,
         ) { authState, showWelcomeScreen ->
-            AppNavAction.Internal.AppStateUpdateReceive( authState, showWelcomeScreen)
+            AppNavAction.Internal.AppStateUpdateReceive(authState, showWelcomeScreen)
         }
+            .distinctUntilChanged()
+            .onEach { value ->
+                Log.d("AppNavViewModel", "AppNav Flow: $value")
+            }
             .onEach(::handleAction)
             .launchIn(viewModelScope)
     }
@@ -37,9 +44,9 @@ class AppNavViewModel(
         val authState = action.authState
         val updatedAppNavState = when (authState) {
             is AuthState.Loading -> AppNavState.Splash
-            is AuthState.Authenticated -> AppNavState.AppUnlocked
+            is AuthState.Authenticated -> AppNavState.LoggedIn
             is AuthState.Unauthenticated -> {
-                when(action.showWelcomeScreen) {
+                when (action.showWelcomeScreen) {
                     true -> AppNavState.AuthWithWelcome
                     false -> AppNavState.Auth
                 }
@@ -59,11 +66,8 @@ sealed interface AppNavState {
     // Show Auth Graph including Welcome Screen
     data object AuthWithWelcome : AppNavState
 
-    // Show Unlock Screen
-    data object AppLocked : AppNavState
-
     // Go to home screen
-    data object AppUnlocked : AppNavState
+    data object LoggedIn : AppNavState
 
     // Show Splash screen
     data object Splash : AppNavState

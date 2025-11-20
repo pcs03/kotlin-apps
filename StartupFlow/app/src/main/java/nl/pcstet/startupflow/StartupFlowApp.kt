@@ -7,6 +7,7 @@ import nl.pcstet.startupflow.data.core.datasource.di.coreDataSourceModule
 import nl.pcstet.startupflow.data.core.manager.di.coreManagerModule
 import nl.pcstet.startupflow.ui.auth.di.authUiModule
 import nl.pcstet.startupflow.ui.core.di.coreUiModule
+import nl.pcstet.startupflow.ui.main.di.mainUiModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
@@ -23,6 +24,7 @@ class StartupFlowApp : Application() {
                 authDataSourceModule,
                 authRepositoryModule,
                 authUiModule,
+                mainUiModule,
             )
         }
     }

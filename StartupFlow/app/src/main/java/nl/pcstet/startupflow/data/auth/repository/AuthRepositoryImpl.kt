@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import nl.pcstet.startupflow.data.auth.datasource.network.AuthApiService
 import nl.pcstet.startupflow.data.auth.repository.model.ApiTestResult
@@ -49,6 +51,12 @@ class AuthRepositoryImpl(
         initialValue = AuthState.Loading
     )
 
+    init {
+        authState.onEach { authState ->
+            Log.d("AuthRepository", "AuthStateFlow: $authState")
+        }.launchIn(unconfinedScope)
+    }
+
     override val apiUrl: Flow<String?> = settingsDataSource.apiUrl
     override val rememberedEmail: Flow<String?> = settingsDataSource.emailAddress
     override val showWelcomeScreen: Flow<Boolean> =
@@ -81,15 +89,17 @@ class AuthRepositoryImpl(
             .toDataState()
     }
 
-    override suspend fun login(credentials: LoginCredentials): DataState<String> {
-        val apiUrl = settingsDataSource.apiUrl.first()
-        if (apiUrl.isNullOrEmpty()) {
-            return DataState.Error(ApiException.Generic("Illegal state. Login attempted, but no API URL found."))
-        }
-
+    override suspend fun login(apiUrl: String, credentials: LoginCredentials, rememberMe: Boolean): DataState<String> {
         val result = authApiService.login(apiUrl, credentials.toLoginRequestDto())
         return result
-            .onSuccess { data -> settingsDataSource.setAccessToken(data.accessToken) }
+            .onSuccess { data ->
+                settingsDataSource.setApiUrl(apiUrl)
+                if (rememberMe) {
+                    settingsDataSource.setEmailAddress(credentials.email)
+                }
+                settingsDataSource.setAccessToken(data.accessToken)
+                settingsDataSource.setUserLoggedInOrCreatedAccount(true)
+            }
             .toDataState().map { loginResponseDto -> loginResponseDto.accessToken }
     }
 
