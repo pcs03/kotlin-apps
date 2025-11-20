@@ -5,8 +5,11 @@ import io.ktor.client.plugins.ServerResponseException
 import nl.pcstet.startupflow.data.utils.DataState
 import java.io.IOException
 import java.net.ConnectException
+import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+
+
 
 sealed interface ApiResult<out T> {
     data class Success<out T>(val data: T) : ApiResult<T>
