@@ -16,12 +16,14 @@ internal fun Project.configureKotlinAndroid(commonExtension: CommonExtension<*, 
 
         defaultConfig {
             minSdk = 26
+            testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         }
 
         compileOptions {
             sourceCompatibility = JavaVersion.VERSION_11
             targetCompatibility = JavaVersion.VERSION_11
         }
+
     }
 
     this.configureKotlin()

@@ -14,40 +14,42 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-fun createHttpClient(engine: HttpClientEngine): HttpClient {
-    return HttpClient(engine) {
-        expectSuccess = true
+object HttpClientFactory {
+    fun create(engine: HttpClientEngine): HttpClient {
+        return HttpClient(engine) {
+            expectSuccess = true
 
-        defaultRequest {
-            contentType(ContentType.Application.Json)
-        }
-
-        install(ContentNegotiation) {
-            json(
-                Json {
-                    ignoreUnknownKeys = true
-                    prettyPrint = true
-                    isLenient = true
-                }
-            )
-        }
-
-        // HTTP Timeout timer
-        install(HttpTimeout) {
-            val timeoutDuration: Long = 30_000
-            requestTimeoutMillis = timeoutDuration
-            connectTimeoutMillis = timeoutDuration
-            socketTimeoutMillis = timeoutDuration
-        }
-
-        // Request Logging
-        install(Logging) {
-            logger = object : Logger {
-                override fun log(message: String) {
-                    Log.v("KTOR-LOG: ", message)
-                }
+            defaultRequest {
+                contentType(ContentType.Application.Json)
             }
-            level = LogLevel.ALL
+
+            install(ContentNegotiation) {
+                json(
+                    Json {
+                        ignoreUnknownKeys = true
+                        prettyPrint = true
+                        isLenient = true
+                    }
+                )
+            }
+
+            // HTTP Timeout timer
+            install(HttpTimeout) {
+                val timeoutDuration: Long = 30_000
+                requestTimeoutMillis = timeoutDuration
+                connectTimeoutMillis = timeoutDuration
+                socketTimeoutMillis = timeoutDuration
+            }
+
+            // Request Logging
+            install(Logging) {
+//                logger = object : Logger {
+//                    override fun log(message: String) {
+//                        Log.v("KTOR-LOG: ", message)
+//                    }
+//                }
+//                level = LogLevel.ALL
+            }
         }
     }
 }

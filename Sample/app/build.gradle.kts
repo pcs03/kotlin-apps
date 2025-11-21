@@ -13,8 +13,6 @@ android {
         applicationId = "nl.pcstet.sample"
         versionCode = 1
         versionName = "1.0"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {

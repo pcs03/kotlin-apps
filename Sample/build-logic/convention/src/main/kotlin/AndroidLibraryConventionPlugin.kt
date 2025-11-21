@@ -23,12 +23,9 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             }
 
             dependencies {
-                add("implementation", libs.findLibrary("koin-android").get())
-
-                add("testImplementation", libs.findLibrary("kotlin.test").get())
-                add("testImplementation", libs.findLibrary("kotlin.test.annotations.common").get())
-                add("testImplementation", libs.findLibrary("assertk").get())
-                add("testImplementation", libs.findLibrary("kotlinx-coroutines-test").get())
+                add("implementation", libs.findLibrary("koin.android").get())
+                add("implementation", libs.findLibrary("androidx.core.ktx").get())
+                add("implementation", libs.findLibrary("androidx.appcompat").get())
             }
         }
     }

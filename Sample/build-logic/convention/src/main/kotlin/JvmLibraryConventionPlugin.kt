@@ -16,12 +16,6 @@ class JvmLibraryConventionPlugin : Plugin<Project> {
             configureKotlinJvm()
 
             dependencies {
-                add("implementation", libs.findLibrary("koin-core").get())
-
-                add("testImplementation", libs.findLibrary("kotlin.test").get())
-                add("testImplementation", libs.findLibrary("kotlin.test.annotations.common").get())
-                add("testImplementation", libs.findLibrary("assertk").get())
-                add("testImplementation", libs.findLibrary("kotlinx-coroutines-test").get())
             }
         }
     }

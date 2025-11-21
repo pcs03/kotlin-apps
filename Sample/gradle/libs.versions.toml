@@ -69,6 +69,8 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
+koin-test = { group = "io.insert-koin", name = "koin-test", version.ref = "koin" }
+koin-test-junit4 = { group = "io.insert-koin", name = "koin-test-junit4", version.ref = "koin" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = "koin" }
 koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel", version.ref = "koin" }
@@ -112,7 +114,7 @@ sample-android-application = { id = "sample.android.application" }
 
 sample-android-feature = { id = "sample.android.feature" }
 
-sample-android-library-compose = { id = "sample.android.libary.compose" }
+sample-android-library-compose = { id = "sample.android.library.compose" }
 sample-android-library = { id = "sample.android.library" }
 sample-android-test = { id = "sample.android.test" }
 

@@ -19,8 +19,6 @@ class AndroidApplicationConventionPlugin: Plugin<Project> {
             }
             dependencies {
                 add("implementation", libs.findLibrary("koin.android").get())
-
-                add("testImplementation", libs.findLibrary("kotlin.test").get())
             }
         }
     }

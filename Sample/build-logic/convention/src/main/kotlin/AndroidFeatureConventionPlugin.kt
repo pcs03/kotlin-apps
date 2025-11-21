@@ -14,7 +14,7 @@ import org.gradle.kotlin.dsl.getByType
 class AndroidFeatureConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
-            apply(plugin = "com.android.library")
+            apply(plugin = "sample.android.library.compose")
 
             dependencies {
                 // TODO: Project dependencies for core
