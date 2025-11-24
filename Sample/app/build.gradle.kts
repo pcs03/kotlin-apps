@@ -1,10 +1,8 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-    alias(libs.plugins.sample.android.application.compose)
     alias(libs.plugins.sample.android.application)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.devtools.ksp)
+    alias(libs.plugins.sample.compose.application)
+    alias(libs.plugins.sample.buildtype.application)
+    alias(libs.plugins.sample.koin.android)
 }
 
 android {
@@ -14,23 +12,13 @@ android {
         versionCode = 1
         versionName = "1.0"
     }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
 }
 dependencies {
     implementation(projects.core.common)
 
 
     // Compose
-    implementation(libs.bundles.compose.main)
+//    implementation(libs.bundles.compose.main)
 //
 //    /// Koin
 //    implementation(libs.koin.core)

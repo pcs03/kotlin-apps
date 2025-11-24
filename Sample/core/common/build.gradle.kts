@@ -1,5 +1,7 @@
 plugins {
+    `java-library`
     alias(libs.plugins.sample.jvm.library)
+    alias(libs.plugins.sample.koin.core)
 }
 
 dependencies {

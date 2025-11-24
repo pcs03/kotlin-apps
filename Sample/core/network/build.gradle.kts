@@ -1,20 +1,11 @@
 plugins {
     alias(libs.plugins.sample.android.library)
-    alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.devtools.ksp)
+    alias(libs.plugins.sample.buildtype.library)
+    alias(libs.plugins.sample.koin.android)
 }
 
 android {
     namespace = "nl.pcstet.core.network"
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
 }
 
 dependencies {

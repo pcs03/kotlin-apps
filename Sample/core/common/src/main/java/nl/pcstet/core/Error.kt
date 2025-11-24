@@ -2,7 +2,7 @@ package nl.pcstet.core
 
 sealed interface Error {
     sealed interface Data : Error {
-        enum class Network : Error.Data {
+        enum class Network : Data {
             BAD_REQUEST,
             UNAUTHORIZED,
             FORBIDDEN,
@@ -19,7 +19,7 @@ sealed interface Error {
             UNKNOWN,
         }
 
-        enum class Local : Error.Data {
+        enum class Local : Data {
             UNKNOWN
 
         }
