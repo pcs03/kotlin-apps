@@ -10,6 +10,7 @@ fun ClientRequestException.toNetworkError(): Error.Data.Network {
     return when (this.response.status.value) {
         400 -> Error.Data.Network.BAD_REQUEST
         401 -> Error.Data.Network.UNAUTHORIZED
+        403 -> Error.Data.Network.FORBIDDEN
         404 -> Error.Data.Network.NOT_FOUND
         408 -> Error.Data.Network.REQUEST_TIMEOUT
         413 -> Error.Data.Network.PAYLOAD_TOO_LARGE
