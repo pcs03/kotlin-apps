@@ -9,6 +9,7 @@ android {
 }
 
 dependencies {
+    implementation(projects.sample.core.model)
     api(libs.androidx.datastore)
     api(libs.androidx.datastore.preferences)
 }

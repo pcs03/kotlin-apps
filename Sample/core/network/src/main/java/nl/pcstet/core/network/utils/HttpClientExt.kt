@@ -12,7 +12,10 @@ import nl.pcstet.core.Result
 import java.io.IOException
 
 
-suspend inline fun <reified T> HttpClient.safeRequest(urlString: String, block: HttpRequestBuilder.() -> Unit): Result<T, Error.Data.Network> {
+suspend inline fun <reified T> HttpClient.safeRequest(
+    urlString: String,
+    block: HttpRequestBuilder.() -> Unit
+): Result<T, Error.Data.Network> {
     return try {
         val response = this.request(urlString) { block() }
         Result.Success(response.body<T>())
